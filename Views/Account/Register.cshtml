@@ -1,0 +1,103 @@
+﻿@model ORBIS.Models.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow">
+                <div class="card-body p-4 p-md-5">
+
+                    <h2 class="text-center mb-2">
+                        Đăng ký tài khoản
+                    </h2>
+
+                    <p class="text-muted text-center mb-4">
+                        Điền thông tin để tạo tài khoản ORBIS
+                    </p>
+
+                    <form asp-controller="Account"
+                          asp-action="Register"
+                          method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="FullName"
+                                   class="form-control"
+                                   autocomplete="name"
+                                   placeholder="Nhập họ và tên" />
+
+                            <span asp-validation-for="FullName"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   autocomplete="email"
+                                   placeholder="example@gmail.com" />
+
+                            <span asp-validation-for="Email"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Password"
+                                   class="form-control"
+                                   autocomplete="new-password"
+                                   placeholder="Ít nhất 8 ký tự" />
+
+                            <span asp-validation-for="Password"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmPassword"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="ConfirmPassword"
+                                   class="form-control"
+                                   autocomplete="new-password"
+                                   placeholder="Nhập lại mật khẩu" />
+
+                            <span asp-validation-for="ConfirmPassword"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            Đăng ký
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

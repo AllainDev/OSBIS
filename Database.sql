@@ -185,6 +185,43 @@ CREATE TABLE Review (
     FOREIGN KEY (OrderId) REFERENCES [Order](OrderId),
     CONSTRAINT UQ_Review_Order_Product UNIQUE (OrderId, ProductId)
 );
+CREATE TABLE PendingRegistration (
+    PendingRegistrationId INT IDENTITY(1,1) PRIMARY KEY,
+
+    FullName NVARCHAR(100) NOT NULL,
+
+    Email VARCHAR(255) NOT NULL,
+
+    Username VARCHAR(50) NOT NULL,
+
+    PasswordHash VARCHAR(500) NOT NULL,
+
+    RoleId TINYINT NOT NULL,
+
+    OtpHash VARCHAR(128) NOT NULL,
+
+    OtpExpiresAtUtc DATETIME2 NOT NULL,
+
+    LastOtpSentAtUtc DATETIME2 NOT NULL,
+
+    FailedAttempts INT NOT NULL
+        CONSTRAINT DF_PendingRegistration_FailedAttempts
+        DEFAULT 0,
+
+    CreatedAtUtc DATETIME2 NOT NULL
+        CONSTRAINT DF_PendingRegistration_CreatedAtUtc
+        DEFAULT GETUTCDATE(),
+
+    CONSTRAINT UQ_PendingRegistration_Email
+        UNIQUE (Email),
+
+    CONSTRAINT CK_PendingRegistration_FailedAttempts
+        CHECK (FailedAttempts >= 0),
+
+    CONSTRAINT FK_PendingRegistration_Role
+        FOREIGN KEY (RoleId)
+        REFERENCES Role(RoleId)
+);
 
 CREATE NONCLUSTERED INDEX IX_User_Email ON [User](Email);
 CREATE NONCLUSTERED INDEX IX_Product_CategoryId ON Product(CategoryId);
@@ -194,3 +231,5 @@ CREATE NONCLUSTERED INDEX IX_Cart_SessionId ON Cart(SessionId);
 CREATE NONCLUSTERED INDEX IX_CartItem_CartId ON CartItem(CartId);
 CREATE NONCLUSTERED INDEX IX_Review_ProductId ON Review(ProductId);
 CREATE NONCLUSTERED INDEX IX_InventoryBatch_ExpiryDate ON InventoryBatch(ExpiryDate);
+CREATE NONCLUSTERED INDEX IX_PendingRegistration_ExpiresAt
+ON PendingRegistration(OtpExpiresAtUtc);

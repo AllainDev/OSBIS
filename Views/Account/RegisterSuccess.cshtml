@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Đăng ký thành công";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5 text-center">
+
+                    <div class="display-4 text-success mb-3">
+                        ✓
+                    </div>
+
+                    <h2>Đăng ký thành công</h2>
+
+                    <p class="text-muted">
+                        Email đã được xác thực và tài khoản
+                        ORBIS đã được tạo.
+                    </p>
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Về trang chủ
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

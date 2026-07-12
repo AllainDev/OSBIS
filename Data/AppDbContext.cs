@@ -24,7 +24,8 @@ namespace ORBIS.Data
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<Shipment> Shipments { get; set; } = null!;
         public DbSet<Review> Reviews { get; set; } = null!;
-
+        public DbSet<PendingRegistration> PendingRegistrations
+    => Set<PendingRegistration>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -45,6 +46,7 @@ namespace ORBIS.Data
             modelBuilder.Entity<Payment>().ToTable("Payment");
             modelBuilder.Entity<Shipment>().ToTable("Shipment");
             modelBuilder.Entity<Review>().ToTable("Review");
+            modelBuilder.Entity<PendingRegistration>().ToTable("PendingRegistration");
 
             // Roles
             modelBuilder.Entity<Role>()
@@ -72,6 +74,47 @@ namespace ORBIS.Data
                 .WithMany(r => r.Users)
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // PendingRegistration
+            modelBuilder.Entity<PendingRegistration>()
+                .HasKey(pr => pr.PendingRegistrationId);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .HasIndex(pr => pr.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.FullName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.Email)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.Username)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.PasswordHash)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.OtpHash)
+                .IsRequired()
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.FailedAttempts)
+                .HasDefaultValue(0);
+
+            modelBuilder.Entity<PendingRegistration>()
+                .Property(pr => pr.CreatedAtUtc)
+                .HasDefaultValueSql("GETUTCDATE()");
 
             // UserAddress
             modelBuilder.Entity<UserAddress>()
@@ -328,6 +371,7 @@ namespace ORBIS.Data
                 .WithMany(o => o.Reviews)
                 .HasForeignKey(r => r.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }
