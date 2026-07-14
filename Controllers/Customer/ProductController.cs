@@ -38,6 +38,11 @@ namespace OSBIS.Controllers.Customer
         {
             if (!Enum.TryParse<OSBIS.Repositories.Specifications.ProductSortBy>(sortBy, true, out var sort))
                 sort = OSBIS.Repositories.Specifications.ProductSortBy.CreatedDesc;
+            // Chuẩn hóa các tham số từ query string để tránh khoảng giá và phân trang không hợp lệ.
+            minPrice = minPrice.HasValue ? Math.Max(0, minPrice.Value) : null;
+            maxPrice = maxPrice.HasValue ? Math.Max(0, maxPrice.Value) : null;
+            if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
+                (minPrice, maxPrice) = (maxPrice, minPrice);
 
             var vm = new ProductListViewModel
             {
@@ -48,7 +53,7 @@ namespace OSBIS.Controllers.Customer
                 InStockOnly = inStockOnly,
                 SortBy = sort,
                 PageNumber = Math.Max(1, pageNumber),
-                PageSize = pageSize
+                PageSize = Math.Clamp(pageSize, 1, 100)
             };
 
             vm.Products = await _productService.GetProductsAsync(vm.ToSpec());

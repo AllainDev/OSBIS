@@ -139,8 +139,11 @@
                                        asp-route-pageNumber="@(Model.Products.PageNumber - 1)"
                                        asp-route-categoryId="@Model.CategoryId"
                                        asp-route-keyword="@Model.Keyword"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
                                        asp-route-sortBy="@Model.SortBy"
-                                       asp-route-inStockOnly="@Model.InStockOnly">
+                                       asp-route-inStockOnly="@Model.InStockOnly"
+                                       asp-route-pageSize="@Model.PageSize">
                                         &laquo; Trước
                                     </a>
                                 </li>
@@ -153,7 +156,11 @@
                                        asp-route-pageNumber="@i"
                                        asp-route-categoryId="@Model.CategoryId"
                                        asp-route-keyword="@Model.Keyword"
-                                       asp-route-sortBy="@Model.SortBy">
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-sortBy="@Model.SortBy"
+                                       asp-route-inStockOnly="@Model.InStockOnly"
+                                       asp-route-pageSize="@Model.PageSize">
                                         @i
                                     </a>
                                 </li>
@@ -164,7 +171,13 @@
                                     <a class="page-link"
                                        asp-controller="Product" asp-action="Index" asp-area="Customer"
                                        asp-route-pageNumber="@(Model.Products.PageNumber + 1)"
-                                       asp-route-categoryId="@Model.CategoryId">
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-keyword="@Model.Keyword"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-sortBy="@Model.SortBy"
+                                       asp-route-inStockOnly="@Model.InStockOnly"
+                                       asp-route-pageSize="@Model.PageSize">
                                         Sau &raquo;
                                     </a>
                                 </li>

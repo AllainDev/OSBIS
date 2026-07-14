@@ -57,12 +57,12 @@ namespace OSBIS.Repositories.Specifications
         {
             return SortBy switch
             {
-                ProductSortBy.PriceAsc => q => q.OrderBy(p => p.UnitPrice),
-                ProductSortBy.PriceDesc => q => q.OrderByDescending(p => p.UnitPrice),
-                ProductSortBy.NameAsc => q => q.OrderBy(p => p.ProductName),
-                ProductSortBy.NameDesc => q => q.OrderByDescending(p => p.ProductName),
-                ProductSortBy.Oldest => q => q.OrderBy(p => p.CreatedAt),
-                _ => q => q.OrderByDescending(p => p.CreatedAt)
+                ProductSortBy.PriceAsc => q => q.OrderBy(p => p.UnitPrice).ThenBy(p => p.ProductId),
+                ProductSortBy.PriceDesc => q => q.OrderByDescending(p => p.UnitPrice).ThenBy(p => p.ProductId),
+                ProductSortBy.NameAsc => q => q.OrderBy(p => p.ProductName).ThenBy(p => p.ProductId),
+                ProductSortBy.NameDesc => q => q.OrderByDescending(p => p.ProductName).ThenBy(p => p.ProductId),
+                ProductSortBy.Oldest => q => q.OrderBy(p => p.CreatedAt).ThenBy(p => p.ProductId),
+                _ => q => q.OrderByDescending(p => p.CreatedAt).ThenBy(p => p.ProductId)
             };
         }
 
