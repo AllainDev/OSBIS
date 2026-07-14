@@ -79,15 +79,70 @@
             <!-- Nút hành động -->
             <div class="d-flex gap-3 align-items-center">
                 <div class="input-group" style="width: 130px;">
-                    <button class="btn btn-outline-secondary" type="button" id="btn-minus">-</button>
-                    <input type="number" class="form-control text-center" value="1" min="1" max="@availableStock">
-                    <button class="btn btn-outline-secondary" type="button" id="btn-plus">+</button>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-minus" @(availableStock <= 0 ? "disabled" : "")>-</button>
+                    <!-- Đã thêm id="quantity" và xử lý value = 0 nếu hết hàng -->
+                    <input type="number" id="quantity" class="form-control text-center" 
+                           value="@(availableStock > 0 ? 1 : 0)" 
+                           min="@(availableStock > 0 ? 1 : 0)" 
+                           max="@availableStock" 
+                           @(availableStock <= 0 ? "disabled" : "")>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-plus" @(availableStock <= 0 ? "disabled" : "")>+</button>
                 </div>
                 
                 <button class="btn btn-primary btn-lg px-5" @(availableStock <= 0 ? "disabled" : "")>
-                    <i class="bi bi-cart-plus me-2"></i> Thêm vào giỏ hàng
+                    <i class="bi bi-cart-plus me-2"></i> @(availableStock <= 0 ? "Đã hết hàng" : "Thêm vào giỏ hàng")
                 </button>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnMinus = document.getElementById("btn-minus");
+            const btnPlus = document.getElementById("btn-plus");
+            const inputQuantity = document.getElementById("quantity");
+
+            // Lấy số lượng tồn kho tối đa từ biến C#
+            const maxStock = @availableStock;
+
+            // Nếu kho hàng có sẵn > 0 mới xử lý các sự kiện
+            if (maxStock > 0 && inputQuantity) {
+                
+                // Xử lý khi nhấn nút Trừ
+                btnMinus.addEventListener("click", function () {
+                    let currentValue = parseInt(inputQuantity.value) || 1;
+                    if (currentValue > 1) { // Không cho dưới 1
+                        inputQuantity.value = currentValue - 1;
+                    }
+                });
+
+                // Xử lý khi nhấn nút Cộng
+                btnPlus.addEventListener("click", function () {
+                    let currentValue = parseInt(inputQuantity.value) || 1;
+                    if (currentValue < maxStock) { // Không cho vượt quá số lượng tồn kho
+                        inputQuantity.value = currentValue + 1;
+                    } else {
+                        alert("Bạn không thể mua vượt quá số lượng có sẵn trong kho (" + maxStock + ").");
+                    }
+                });
+
+                // Xử lý khi người dùng TỰ NHẬP số bằng bàn phím
+                inputQuantity.addEventListener("change", function () {
+                    let currentValue = parseInt(inputQuantity.value);
+                    
+                    // Nếu nhập chữ hoặc số nhỏ hơn 1 thì mặc định về 1
+                    if (isNaN(currentValue) || currentValue < 1) {
+                        inputQuantity.value = 1;
+                    } 
+                    // Nếu nhập lớn hơn số lượng tồn thì đưa về max
+                    else if (currentValue > maxStock) {
+                        inputQuantity.value = maxStock;
+                        alert("Sản phẩm này chỉ còn tối đa " + maxStock + " sản phẩm.");
+                    }
+                });
+            }
+        });
+    </script>
+}
