@@ -1,3 +1,15 @@
-﻿@{
-    Layout = "_Layout";
+@{
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+    if (area == "Admin")
+    {
+        Layout = "_LayoutAdminLTE";
+    }
+    else if (area == "Staff")
+    {
+        Layout = "_LayoutStaff";
+    }
+    else
+    {
+        Layout = "_LayoutCustomer";
+    }
 }

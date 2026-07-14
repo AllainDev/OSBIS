@@ -1,0 +1,50 @@
+@model OSBIS.Models.ViewModels.Category.CategoryViewModel
+@{
+    ViewData["Title"] = "Thêm danh mục";
+    Layout = "_LayoutAdminLTE";
+    var allCategories = ViewBag.AllCategories as IEnumerable<OSBIS.Models.Entities.Category> ?? new List<OSBIS.Models.Entities.Category>();
+}
+
+<div class="container py-4">
+    <h2><i class="bi bi-plus-circle"></i> Thêm danh mục</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Danh mục</a></li>
+            <li class="breadcrumb-item active">Tạo mới</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="CategoryName" class="form-label"></label>
+                    <input asp-for="CategoryName" class="form-control" />
+                    <span asp-validation-for="CategoryName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ParentCategoryId" class="form-label"></label>
+                    <select asp-for="ParentCategoryId" class="form-select">
+                        <option value="">-- Danh mục gốc --</option>
+                        @foreach (var c in allCategories)
+                        {
+                            <option value="@c.CategoryId">@c.CategoryName</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Lưu</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </form>
+        </div>
+    </div>
+</div>

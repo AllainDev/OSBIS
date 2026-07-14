@@ -1,0 +1,65 @@
+@model OSBIS.Models.Entities.Voucher
+@{
+    ViewData["Title"] = "Sửa Voucher";
+    Layout = "_LayoutAdminLTE";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-pencil"></i> Sửa Voucher</h2>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="VoucherId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Mã voucher</label>
+                        <input asp-for="VoucherCode" class="form-control" required />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Loại</label>
+                        <select asp-for="DiscountType" class="form-select">
+                            @foreach (OSBIS.Models.Enums.DiscountType t in Enum.GetValues<OSBIS.Models.Enums.DiscountType>())
+                            {
+                                <option value="@((int)t)">@t</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Giá trị</label>
+                        <input asp-for="DiscountValue" class="form-control" type="number" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Đơn tối thiểu</label>
+                        <input asp-for="MinOrderValue" class="form-control" type="number" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Max discount</label>
+                        <input asp-for="MaxDiscountAmount" class="form-control" type="number" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Giới hạn lượt</label>
+                        <input asp-for="UsageLimit" class="form-control" type="number" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Từ ngày</label>
+                        <input asp-for="StartDate" class="form-control" type="datetime-local" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Đến ngày</label>
+                        <input asp-for="EndDate" class="form-control" type="datetime-local" required />
+                    </div>
+                    <div class="col-md-12 mb-3 form-check">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                        <label class="form-check-label">Kích hoạt</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </div>
+    </form>
+</div>

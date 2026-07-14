@@ -1,0 +1,126 @@
+@model OSBIS.Models.ViewModels.Product.ProductListViewModel
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    Layout = "_LayoutStaff";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-box-seam"></i> Quản lý sản phẩm</h2>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" name="keyword" value="@Model.Keyword" placeholder="Tên, SKU..." class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Tất cả danh mục --</option>
+                        @if (Model.Categories != null)
+                        {
+                            foreach (var c in Model.Categories)
+                            {
+                                <option value="@c.CategoryId" selected="@(Model.CategoryId == c.CategoryId)">@c.CategoryName</option>
+                                if (c.SubCategories != null)
+                                {
+                                    foreach (var s in c.SubCategories)
+                                    {
+                                        <option value="@s.CategoryId" selected="@(Model.CategoryId == s.CategoryId)"> -- @s.CategoryName</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>SKU</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th class="text-end">Giá</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end" style="width:240px">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Products.Items.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có sản phẩm nào.</td></tr>
+                    }
+                    @foreach (var p in Model.Products.Items)
+                    {
+                        var primary = p.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)
+                                      ?? p.ProductImages?.FirstOrDefault();
+                        <tr>
+                            <td><code>@p.SKU</code></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (primary != null)
+                                    {
+                                        <img src="@primary.ImageUrl" style="width:40px;height:40px;object-fit:cover;" class="rounded" />
+                                    }
+                                    <span>@p.ProductName</span>
+                                </div>
+                            </td>
+                            <td>@p.Category?.CategoryName</td>
+                            <td class="text-end">@p.UnitPrice.ToString("N0") đ</td>
+                            <td class="text-center">@p.TotalStock</td>
+                            <td class="text-center">
+                                @if (p.IsDeleted == true)
+                                {
+                                    <span class="badge bg-secondary">Đã xóa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Hoạt động</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a asp-action="Batches" asp-route-id="@p.ProductId" class="btn btn-sm btn-info">
+                                    <i class="bi bi-boxes"></i> Lô
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@p.ProductId" method="post" class="d-inline"
+                                      onsubmit="return confirm('Xóa sản phẩm này?');">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

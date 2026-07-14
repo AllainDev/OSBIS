@@ -1,0 +1,143 @@
+@model UserListViewModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-people"></i> Danh sách người dùng</h5>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> Tạo mới
+            </a>
+        }
+    </div>
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <input name="search" value="@Model.SearchTerm" class="form-control" placeholder="Tìm theo username, email, họ tên..." />
+            </div>
+            <div class="col-md-3">
+                <select name="role" class="form-select" asp-items="@(ViewBag.Roles as SelectList)">
+                    <option value="">-- Tất cả vai trò --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+            </div>
+            <div class="col-md-3 text-end">
+                <small class="text-muted">Tổng: <strong>@Model.TotalCount</strong> người dùng</small>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Đăng nhập cuối</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Users.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">Không có người dùng nào.</td>
+                        </tr>
+                    }
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@user.UserId</td>
+                            <td><strong>@user.Username</strong></td>
+                            <td>@user.FullName</td>
+                            <td><small>@user.Email</small></td>
+                            <td>
+                                <span class="badge bg-info">@user.Role.RoleName</span>
+                            </td>
+                            <td>
+                                @if (user.IsActive == true)
+                                {
+                                    <span class="badge bg-success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Vô hiệu</span>
+                                }
+                                @if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+                                {
+                                    <span class="badge bg-danger">Bị khóa</span>
+                                }
+                            </td>
+                            <td><small>@user.CreatedAt?.ToString("dd/MM/yyyy")</small></td>
+                            <td><small>@user.LastLoginAt?.ToString("dd/MM/yyyy HH:mm")</small></td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@user.UserId" class="btn btn-outline-info" title="Chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@user.UserId" class="btn btn-outline-primary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+                                        {
+                                            <form asp-action="Unlock" asp-route-id="@user.UserId" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-success" title="Mở khóa">
+                                                    <i class="bi bi-unlock"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Lock" asp-route-id="@user.UserId" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Khóa tài khoản này 60 phút?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-warning" title="Khóa">
+                                                    <i class="bi bi-lock"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        <form asp-action="Delete" asp-route-id="@user.UserId" method="post" class="d-inline"
+                                              onsubmit="return confirm('Xóa người dùng @user.Username? Hành động này không thể hoàn tác.');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-search="@Model.SearchTerm" asp-route-role="@Model.RoleFilter">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>

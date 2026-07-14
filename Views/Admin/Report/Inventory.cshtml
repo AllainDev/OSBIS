@@ -1,0 +1,86 @@
+@model IReadOnlyList<OSBIS.Services.Interfaces.InventoryItem>
+@{
+    ViewData["Title"] = "Báo cáo tồn kho";
+    var lowStock = Model.Count(x => x.Available < 10);
+    var medium = Model.Count(x => x.Available >= 10 && x.Available < 30);
+    var ok = Model.Count(x => x.Available >= 30);
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="small-box bg-osbis-red">
+            <div class="inner">
+                <h3>@lowStock</h3>
+                <p>Sắp hết (< 10)</p>
+            </div>
+            <i class="bi bi-exclamation-triangle icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="small-box bg-osbis-orange">
+            <div class="inner">
+                <h3>@medium</h3>
+                <p>Sắp ít (10-29)</p>
+            </div>
+            <i class="bi bi-dash-circle icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="small-box bg-osbis-green">
+            <div class="inner">
+                <h3>@ok</h3>
+                <p>Ổn định (≥ 30)</p>
+            </div>
+            <i class="bi bi-check-circle icon"></i>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-box-seam"></i> Tình trạng tồn kho</h3>
+        <div class="card-tools">
+            <a asp-controller="Product" asp-action="Index" class="btn btn-tool text-white"><i class="bi bi-plus-circle"></i> Nhập kho</a>
+        </div>
+    </div>
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Sản phẩm</th>
+                    <th class="text-end">Tồn kho</th>
+                    <th class="text-end">Đã reserve</th>
+                    <th class="text-end">Khả dụng</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.OrderBy(x => x.Available))
+                {
+                    <tr class="@(p.Available < 10 ? "table-danger" : (p.Available < 30 ? "table-warning" : ""))">
+                        <td><code>@p.SKU</code></td>
+                        <td>@p.ProductName</td>
+                        <td class="text-end">@p.TotalStock</td>
+                        <td class="text-end">@p.ReservedQuantity</td>
+                        <td class="text-end fw-bold">@p.Available</td>
+                        <td>
+                            @if (p.Available < 10)
+                            {
+                                <span class="badge bg-danger">Sắp hết</span>
+                            }
+                            else if (p.Available < 30)
+                            {
+                                <span class="badge bg-warning text-dark">Ít</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">OK</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 using System;
 
-namespace ORBIS.Models.Entities
+namespace OSBIS.Models.Entities
 {
     public class InventoryBatch
     {

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ORBIS.Models.Entities;
+using OSBIS.Models.Entities;
 
-namespace ORBIS.Data
+namespace OSBIS.Data
 {
     public class AppDbContext : DbContext
     {
@@ -23,13 +23,20 @@ namespace ORBIS.Data
         public DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<Shipment> Shipments { get; set; } = null!;
+        public DbSet<ShipmentTracking> ShipmentTrackings { get; set; } = null!;
         public DbSet<Review> Reviews { get; set; } = null!;
+        public DbSet<VoucherUsage> VoucherUsages { get; set; } = null!;
+        public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<SystemConfig> SystemConfigs { get; set; } = null!;
+        public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // ============================================================
             // Table mappings
+            // ============================================================
             modelBuilder.Entity<Role>().ToTable("Role");
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<UserAddress>().ToTable("UserAddress");
@@ -44,14 +51,23 @@ namespace ORBIS.Data
             modelBuilder.Entity<OrderDetail>().ToTable("OrderDetail");
             modelBuilder.Entity<Payment>().ToTable("Payment");
             modelBuilder.Entity<Shipment>().ToTable("Shipment");
+            modelBuilder.Entity<ShipmentTracking>().ToTable("ShipmentTracking");
             modelBuilder.Entity<Review>().ToTable("Review");
+            modelBuilder.Entity<VoucherUsage>().ToTable("VoucherUsage");
+            modelBuilder.Entity<Notification>().ToTable("Notification");
+            modelBuilder.Entity<SystemConfig>().ToTable("SystemConfig");
+            modelBuilder.Entity<AuditLog>().ToTable("AuditLog");
 
-            // Roles
+            // ============================================================
+            // Role
+            // ============================================================
             modelBuilder.Entity<Role>()
                 .HasIndex(r => r.RoleName)
                 .IsUnique();
 
-            // Users
+            // ============================================================
+            // User
+            // ============================================================
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
@@ -61,6 +77,9 @@ namespace ORBIS.Data
             modelBuilder.Entity<User>()
                 .Property(u => u.IsActive)
                 .HasDefaultValue(true);
+            modelBuilder.Entity<User>()
+                .Property(u => u.FailedLoginCount)
+                .HasDefaultValue(0);
             modelBuilder.Entity<User>()
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
@@ -73,7 +92,9 @@ namespace ORBIS.Data
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ============================================================
             // UserAddress
+            // ============================================================
             modelBuilder.Entity<UserAddress>()
                 .HasKey(ua => ua.AddressId);
             modelBuilder.Entity<UserAddress>()
@@ -85,7 +106,9 @@ namespace ORBIS.Data
                 .HasForeignKey(ua => ua.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ============================================================
             // Category
+            // ============================================================
             modelBuilder.Entity<Category>()
                 .Property(c => c.IsDeleted)
                 .HasDefaultValue(false);
@@ -101,7 +124,9 @@ namespace ORBIS.Data
                 .HasForeignKey(c => c.ParentCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ============================================================
             // Product
+            // ============================================================
             modelBuilder.Entity<Product>()
                 .HasIndex(p => p.SKU)
                 .IsUnique();
@@ -135,7 +160,9 @@ namespace ORBIS.Data
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ============================================================
             // ProductImage
+            // ============================================================
             modelBuilder.Entity<ProductImage>()
                 .HasKey(pi => pi.ImageId);
             modelBuilder.Entity<ProductImage>()
@@ -150,7 +177,9 @@ namespace ORBIS.Data
                 .HasForeignKey(pi => pi.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ============================================================
             // InventoryBatch
+            // ============================================================
             modelBuilder.Entity<InventoryBatch>()
                 .HasKey(ib => ib.BatchId);
             modelBuilder.Entity<InventoryBatch>()
@@ -165,7 +194,9 @@ namespace ORBIS.Data
                 .HasForeignKey(ib => ib.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ============================================================
             // Voucher
+            // ============================================================
             modelBuilder.Entity<Voucher>()
                 .HasIndex(v => v.VoucherCode)
                 .IsUnique();
@@ -186,7 +217,9 @@ namespace ORBIS.Data
                 .Property(v => v.IsActive)
                 .HasDefaultValue(true);
 
+            // ============================================================
             // Cart
+            // ============================================================
             modelBuilder.Entity<Cart>()
                 .HasIndex(c => c.UserId)
                 .IsUnique();
@@ -205,7 +238,9 @@ namespace ORBIS.Data
                 .HasForeignKey<Cart>(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ============================================================
             // CartItem
+            // ============================================================
             modelBuilder.Entity<CartItem>()
                 .HasIndex(ci => new { ci.CartId, ci.ProductId })
                 .IsUnique();
@@ -220,7 +255,12 @@ namespace ORBIS.Data
                 .HasForeignKey(ci => ci.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ============================================================
             // Order
+            // ============================================================
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.OrderCode)
+                .IsUnique();
             modelBuilder.Entity<Order>()
                 .Property(o => o.OrderDate)
                 .HasDefaultValueSql("GETUTCDATE()");
@@ -250,8 +290,12 @@ namespace ORBIS.Data
                 .WithMany(v => v.Orders)
                 .HasForeignKey(o => o.VoucherId)
                 .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => new { o.UserId, o.OrderDate });
 
+            // ============================================================
             // OrderDetail
+            // ============================================================
             modelBuilder.Entity<OrderDetail>()
                 .HasKey(od => new { od.OrderId, od.ProductId });
             modelBuilder.Entity<OrderDetail>()
@@ -268,7 +312,9 @@ namespace ORBIS.Data
                 .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ============================================================
             // Payment
+            // ============================================================
             modelBuilder.Entity<Payment>()
                 .HasIndex(p => p.OrderId)
                 .IsUnique();
@@ -287,7 +333,9 @@ namespace ORBIS.Data
                 .HasForeignKey<Payment>(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ============================================================
             // Shipment
+            // ============================================================
             modelBuilder.Entity<Shipment>()
                 .HasIndex(s => s.OrderId)
                 .IsUnique();
@@ -302,8 +350,15 @@ namespace ORBIS.Data
                 .WithOne(o => o.Shipment)
                 .HasForeignKey<Shipment>(s => s.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Shipment>()
+                .HasOne(s => s.AssignedShipper)
+                .WithMany()
+                .HasForeignKey(s => s.AssignedShipperId)
+                .OnDelete(DeleteBehavior.SetNull);
 
+            // ============================================================
             // Review
+            // ============================================================
             modelBuilder.Entity<Review>()
                 .HasIndex(r => new { r.OrderId, r.ProductId })
                 .IsUnique();
@@ -328,6 +383,112 @@ namespace ORBIS.Data
                 .WithMany(o => o.Reviews)
                 .HasForeignKey(r => r.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ============================================================
+            // ShipmentTracking (Phase 1.5 — Timeline cho Customer tracking đơn)
+            // ============================================================
+            modelBuilder.Entity<ShipmentTracking>()
+                .HasKey(st => st.TrackingId);
+            modelBuilder.Entity<ShipmentTracking>()
+                .Property(st => st.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            modelBuilder.Entity<ShipmentTracking>()
+                .HasIndex(st => new { st.ShipmentId, st.UpdatedAt });
+            modelBuilder.Entity<ShipmentTracking>()
+                .HasOne(st => st.Shipment)
+                .WithMany(s => s.ShipmentTrackings)
+                .HasForeignKey(st => st.ShipmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ShipmentTracking>()
+                .HasOne(st => st.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(st => st.UpdatedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ============================================================
+            // VoucherUsage (Phase 1.5 — Chống abuse voucher per-user)
+            // ============================================================
+            modelBuilder.Entity<VoucherUsage>()
+                .HasKey(vu => vu.VoucherUsageId);
+            modelBuilder.Entity<VoucherUsage>()
+                .HasIndex(vu => new { vu.VoucherId, vu.UserId });
+            modelBuilder.Entity<VoucherUsage>()
+                .HasIndex(vu => vu.OrderId)
+                .IsUnique();
+            modelBuilder.Entity<VoucherUsage>()
+                .Property(vu => vu.UsedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            modelBuilder.Entity<VoucherUsage>()
+                .HasOne(vu => vu.Voucher)
+                .WithMany()
+                .HasForeignKey(vu => vu.VoucherId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<VoucherUsage>()
+                .HasOne(vu => vu.User)
+                .WithMany()
+                .HasForeignKey(vu => vu.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<VoucherUsage>()
+                .HasOne(vu => vu.Order)
+                .WithMany()
+                .HasForeignKey(vu => vu.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ============================================================
+            // Notification (Phase 1.5 — In-app bell trên navbar)
+            // ============================================================
+            modelBuilder.Entity<Notification>()
+                .HasKey(n => n.NotificationId);
+            modelBuilder.Entity<Notification>()
+                .Property(n => n.IsRead)
+                .HasDefaultValue(false);
+            modelBuilder.Entity<Notification>()
+                .Property(n => n.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt });
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ============================================================
+            // SystemConfig (Phase 1.5 — Key-value config)
+            // ============================================================
+            modelBuilder.Entity<SystemConfig>()
+                .HasKey(sc => sc.ConfigKey);
+            modelBuilder.Entity<SystemConfig>()
+                .Property(sc => sc.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            modelBuilder.Entity<SystemConfig>()
+                .HasOne(sc => sc.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(sc => sc.UpdatedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ============================================================
+            // AuditLog (Phase 1 - BR09)
+            // ============================================================
+            modelBuilder.Entity<AuditLog>()
+                .HasKey(al => al.AuditLogId);
+            modelBuilder.Entity<AuditLog>()
+                .Property(al => al.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            modelBuilder.Entity<AuditLog>()
+                .Property(al => al.IsSuccess)
+                .HasDefaultValue(true);
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(al => new { al.UserId, al.CreatedAt });
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(al => new { al.Username, al.CreatedAt });
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(al => al.CreatedAt);
+            modelBuilder.Entity<AuditLog>()
+                .HasOne(al => al.User)
+                .WithMany(u => u.AuditLogs)
+                .HasForeignKey(al => al.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

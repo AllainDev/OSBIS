@@ -1,0 +1,76 @@
+@model List<OSBIS.Models.ViewModels.Category.CategoryTreeNode>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    Layout = "_LayoutAdminLTE";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-diagram-3"></i> Quản lý danh mục</h2>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Thêm danh mục
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="card shadow-sm">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Tên danh mục</th>
+                    <th>Cấp</th>
+                    <th class="text-center">Số sản phẩm</th>
+                    <th class="text-end" style="width:200px">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="4" class="text-center text-muted py-4">Chưa có danh mục nào.</td></tr>
+                }
+                @foreach (var node in Model)
+                {
+                    <tr>
+                        <td>
+                            <span style="margin-left:@(node.Level * 30)px"></span>
+                            @if (node.Level == 0)
+                            {
+                                <i class="bi bi-folder-fill text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-arrow-return-right text-muted"></i>
+                            }
+                            <strong>@node.CategoryName</strong>
+                        </td>
+                        <td><span class="badge bg-secondary">Cấp @node.Level</span></td>
+                        <td class="text-center">
+                            <span class="badge bg-info">@node.ProductCount</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Create" asp-route-parentId="@node.CategoryId" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-plus"></i> Con
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@node.CategoryId" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@node.CategoryId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Xóa danh mục này?');">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

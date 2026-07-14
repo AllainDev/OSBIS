@@ -1,0 +1,77 @@
+@model User
+@{
+    ViewData["Title"] = $"Chi tiết: {Model.Username}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Chi tiết người dùng</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">User ID:</dt>
+                    <dd class="col-sm-9">@Model.UserId</dd>
+
+                    <dt class="col-sm-3">Username:</dt>
+                    <dd class="col-sm-9"><strong>@Model.Username</strong></dd>
+
+                    <dt class="col-sm-3">Họ tên:</dt>
+                    <dd class="col-sm-9">@Model.FullName</dd>
+
+                    <dt class="col-sm-3">Email:</dt>
+                    <dd class="col-sm-9">@Model.Email</dd>
+
+                    <dt class="col-sm-3">Số điện thoại:</dt>
+                    <dd class="col-sm-9">@(Model.Phone ?? "-")</dd>
+
+                    <dt class="col-sm-3">Vai trò:</dt>
+                    <dd class="col-sm-9"><span class="badge bg-info">@Model.Role?.RoleName</span></dd>
+
+                    <dt class="col-sm-3">Trạng thái:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.IsActive == true)
+                        {
+                            <span class="badge bg-success">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Vô hiệu</span>
+                        }
+                        @if (Model.LockoutEnd.HasValue && Model.LockoutEnd > DateTime.UtcNow)
+                        {
+                            <span class="badge bg-danger">Bị khóa đến @Model.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Số lần đăng nhập sai:</dt>
+                    <dd class="col-sm-9">@Model.FailedLoginCount</dd>
+
+                    <dt class="col-sm-3">Ngày tạo:</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                    <dt class="col-sm-3">Cập nhật:</dt>
+                    <dd class="col-sm-9">@Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                    <dt class="col-sm-3">Đăng nhập cuối:</dt>
+                    <dd class="col-sm-9">@(Model.LastLoginAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "Chưa đăng nhập")</dd>
+
+                    <dt class="col-sm-3">IP đăng nhập cuối:</dt>
+                    <dd class="col-sm-9"><code>@(Model.LastLoginIp ?? "-")</code></dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-white text-end">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Chỉnh sửa
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

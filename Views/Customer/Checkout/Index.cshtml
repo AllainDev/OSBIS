@@ -1,0 +1,172 @@
+@model OSBIS.Models.ViewModels.Checkout.CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh toán";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-credit-card"></i> Thanh toán</h2>
+
+    <form asp-controller="Checkout" asp-action="PlaceOrder" asp-area="Customer" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <!-- Cột trái: thông tin + sản phẩm -->
+            <div class="col-lg-8">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-light fw-bold">
+                        <i class="bi bi-geo-alt"></i> Thông tin giao hàng
+                    </div>
+                    <div class="card-body">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="ReceiverName" class="form-label"></label>
+                            <input asp-for="ReceiverName" class="form-control" />
+                            <span asp-validation-for="ReceiverName" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ReceiverPhone" class="form-label"></label>
+                            <input asp-for="ReceiverPhone" class="form-control" />
+                            <span asp-validation-for="ReceiverPhone" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label"></label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="2"
+                                      placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Note" class="form-label"></label>
+                            <textarea asp-for="Note" class="form-control" rows="2"
+                                      placeholder="Ghi chú cho shipper (không bắt buộc)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-light fw-bold">
+                        <i class="bi bi-box-seam"></i> Sản phẩm trong đơn (@Model.Cart.TotalQuantity sản phẩm)
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in Model.Cart.Items)
+                        {
+                            <li class="list-group-item d-flex align-items-center">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="me-2" style="width: 50px; height: 50px; object-fit: cover;" />
+                                }
+                                <div class="flex-grow-1 ms-2">
+                                    <div class="fw-bold">@item.ProductName</div>
+                                    <small class="text-muted">@item.Quantity × @item.UnitPrice.ToString("N0")đ</small>
+                                </div>
+                                <span class="fw-bold">@item.LineTotal.ToString("N0")đ</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-light fw-bold">
+                        <i class="bi bi-credit-card-2-front"></i> Phương thức thanh toán
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" asp-for="PaymentMethod"
+                                   value="@((int)OSBIS.Models.Enums.PaymentMethod.COD)" id="pm-cod" checked />
+                            <label class="form-check-label" for="pm-cod">
+                                <i class="bi bi-truck"></i> <strong>COD</strong> — Thanh toán khi nhận hàng
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="PaymentMethod"
+                                   value="@((int)OSBIS.Models.Enums.PaymentMethod.BankTransfer)" id="pm-ck" />
+                            <label class="form-check-label" for="pm-ck">
+                                <i class="bi bi-bank"></i> <strong>Chuyển khoản ngân hàng</strong>
+                            </label>
+                        </div>
+                        @if (Model.PaymentMethod == OSBIS.Models.Enums.PaymentMethod.BankTransfer)
+                        {
+                            <div class="alert alert-secondary mt-3 mb-0">
+                                <strong>Thông tin CK:</strong><br />
+                                Ngân hàng: <strong>@Model.BankName</strong><br />
+                                Số TK: <strong>@Model.BankAccountNumber</strong><br />
+                Chủ TK: <strong>@Model.BankAccountName</strong><br />
+                                <small class="text-muted">Nội dung CK: <code>OSB-[Mã đơn hàng]</code>. Staff sẽ xác nhận trong vòng 24h.</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: tổng kết + voucher -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm sticky-top" style="top: 80px;">
+                    <div class="card-header bg-primary text-white fw-bold">
+                        <i class="bi bi-receipt"></i> Tổng đơn hàng
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-7">Tạm tính:</dt>
+                            <dd class="col-5 text-end">@Model.Cart.SubTotal.ToString("N0")đ</dd>
+
+                            <dt class="col-7">Phí vận chuyển:</dt>
+                            <dd class="col-5 text-end">
+                                @(Model.ShippingFee == 0
+                                    ? "<span class='text-success'>Miễn phí</span>"
+                                    : Model.ShippingFee.ToString("N0") + "đ")
+                            </dd>
+
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <dt class="col-7 text-success">Voucher (@Model.VoucherCode):</dt>
+                                <dd class="col-5 text-end text-success">-@Model.DiscountAmount.ToString("N0")đ</dd>
+                            }
+                        </dl>
+                        <hr />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Tổng cộng:</span>
+                            <span class="fs-3 fw-bold text-danger">@Model.TotalAmount.ToString("N0")đ</span>
+                        </div>
+
+                        <!-- Voucher -->
+                        <div class="mt-3">
+                            <label class="form-label fw-bold">Mã giảm giá</label>
+                            <div class="input-group">
+                                <input asp-for="VoucherCode" class="form-control" placeholder="Nhập mã" />
+                                <button type="submit" class="btn btn-outline-primary"
+                                        formaction="@Url.Action("Index", "Checkout", new { area = "Customer" })"
+                                        formmethod="get">
+                                    Áp dụng
+                                </button>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.VoucherError))
+                            {
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle"></i> @Model.VoucherError</div>
+                            }
+                            @if (Model.VoucherDiscountPreview.HasValue)
+                            {
+                                <div class="text-success small mt-1">
+                                    <i class="bi bi-check-circle"></i> Áp dụng thành công! Giảm @Model.VoucherDiscountPreview.Value.ToString("N0")đ
+                                </div>
+                            }
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 mt-4">
+                            <i class="bi bi-check2-circle"></i> Đặt hàng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Show bank info khi chọn BankTransfer
+        document.querySelectorAll('input[name="PaymentMethod"]').forEach(el => {
+            el.addEventListener('change', () => location.reload());
+        });
+    </script>
+}

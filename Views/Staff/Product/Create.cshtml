@@ -1,0 +1,111 @@
+@model OSBIS.Models.ViewModels.Product.ProductCreateEditViewModel
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    Layout = "_LayoutStaff";
+    var categories = ViewBag.Categories as IEnumerable<OSBIS.Models.Entities.Category> ?? new List<OSBIS.Models.Entities.Category>();
+}
+
+<div class="container py-4">
+    <h2><i class="bi bi-plus-circle"></i> Thêm sản phẩm</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Sản phẩm</a></li>
+            <li class="breadcrumb-item active">Tạo mới</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SKU" class="form-label"></label>
+                        <input asp-for="SKU" class="form-control" />
+                        <span asp-validation-for="SKU" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="CategoryId" class="form-label"></label>
+                        <select asp-for="CategoryId" class="form-select">
+                            <option value="">-- Chọn danh mục --</option>
+                            @foreach (var c in categories)
+                            {
+                                <option value="@c.CategoryId">@c.CategoryName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ProductName" class="form-label"></label>
+                    <input asp-for="ProductName" class="form-control" />
+                    <span asp-validation-for="ProductName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="UnitOfMeasure" class="form-label"></label>
+                        <input asp-for="UnitOfMeasure" class="form-control" placeholder="gói, hộp, cái..." />
+                        <span asp-validation-for="UnitOfMeasure" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Weight" class="form-label"></label>
+                        <input asp-for="Weight" type="number" step="0.01" min="0" class="form-control" />
+                        <span asp-validation-for="Weight" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="UnitPrice" class="form-label"></label>
+                        <input asp-for="UnitPrice" type="number" step="1000" min="0" class="form-control" />
+                        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="TotalStock" class="form-label"></label>
+                        <input asp-for="TotalStock" type="number" min="0" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ảnh sản phẩm (có thể chọn nhiều)</label>
+                    <input type="file" name="Images" multiple accept="image/jpeg,image/png,image/webp"
+                           class="form-control" id="imageInput" />
+                    <small class="text-muted">Tối đa 5 ảnh, mỗi ảnh ≤ 5MB (.jpg/.png/.webp)</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ảnh chính (chỉ số)</label>
+                    <input asp-for="PrimaryImageIndex" type="number" min="0" class="form-control" style="width:120px" value="0" />
+                </div>
+
+                <div id="preview" class="d-flex gap-2 flex-wrap mb-3"></div>
+
+                <hr />
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Lưu sản phẩm</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const input = document.getElementById('imageInput');
+        input?.addEventListener('change', function() {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            [...this.files].forEach((f, i) => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                img.style.cssText = 'width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #ddd';
+                img.title = `Ảnh #${i + 1}`;
+                preview.appendChild(img);
+            });
+        });
+    </script>
+}

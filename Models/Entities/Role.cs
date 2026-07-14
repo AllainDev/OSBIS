@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ORBIS.Models.Entities
+namespace OSBIS.Models.Entities
 {
     public class Role
     {

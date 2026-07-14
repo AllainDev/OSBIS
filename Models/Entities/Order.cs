@@ -1,20 +1,25 @@
 using System;
 using System.Collections.Generic;
+using OSBIS.Models.Enums;
 
-namespace ORBIS.Models.Entities
+namespace OSBIS.Models.Entities
 {
     public class Order
     {
         public int OrderId { get; set; }
         public int UserId { get; set; }
         public int? VoucherId { get; set; }
+
+        /// <summary>Mã đơn hàng format OSB-yyyyMMdd-#### (unique, do OrderService.PlaceOrderAsync sinh ra)</summary>
+        public string OrderCode { get; set; } = null!;
+
         public DateTime? OrderDate { get; set; }
         public decimal SubTotal { get; set; }
         public decimal ShippingFee { get; set; }
         public decimal? DiscountAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public string ShippingAddress { get; set; } = null!;
-        public byte OrderStatus { get; set; }
+        public OrderStatus OrderStatus { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
         public User User { get; set; } = null!;

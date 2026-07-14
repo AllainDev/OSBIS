@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = "Broadcast";
+    Layout = "_LayoutAdminLTE";
+}
+
+<div class="container py-4">
+    <h2><i class="bi bi-megaphone"></i> Broadcast đến tất cả khách hàng</h2>
+
+    <form asp-action="Broadcast" method="post">
+        @Html.AntiForgeryToken()
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Notification sẽ được gửi đến tất cả customer.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tiêu đề</label>
+                    <input type="text" name="title" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nội dung</label>
+                    <textarea name="message" class="form-control" rows="4" required></textarea>
+                </div>
+                <button class="btn btn-warning">Broadcast</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </div>
+    </form>
+</div>

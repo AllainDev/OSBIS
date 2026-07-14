@@ -1,0 +1,203 @@
+@using OSBIS.Common
+@inject OSBIS.Services.Interfaces.INotificationService NotificationService
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string IsActive(string controller, params string[] actions)
+    {
+        if (!string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)) return "";
+        if (actions == null || actions.Length == 0) return "active";
+        return actions.Any(a => string.Equals(currentAction, a, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+    }
+
+    int unreadNotif = 0;
+    try
+    {
+        var uid = User.GetUserId() ?? 0;
+        if (uid > 0) unreadNotif = await NotificationService.GetUnreadCountAsync(uid);
+    }
+    catch { unreadNotif = 0; }
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · OSBIS Staff</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css" />
+    <link rel="stylesheet" href="~/css/adminlte-custom.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="osbis-lte">
+<div class="osbis-wrapper">
+
+    <!-- ========== SIDEBAR (Staff) ========== -->
+    <aside class="osbis-sidebar">
+        <div class="brand">
+            <i class="bi bi-person-badge"></i>
+            <span>OSBIS Staff</span>
+        </div>
+
+        <div class="user-panel">
+            <div class="avatar">
+                @(User.GetFullName()?.Substring(0, 1).ToUpper() ?? User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "?")
+            </div>
+            <div class="info">
+                <div class="name">@User.GetFullName()</div>
+                <div class="role">@User.GetRole()</div>
+            </div>
+        </div>
+
+        <ul class="nav-sidebar">
+            <li class="nav-header">Tổng quan</li>
+            <li>
+                <a class="nav-link @IsActive("Dashboard", "Index")"
+                   href="/Staff/Dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+
+            <li class="nav-header">Vận hành</li>
+            <li>
+                <a class="nav-link @IsActive("Order")"
+                   href="/Staff/Order">
+                    <i class="bi bi-cart-check"></i> Xử lý đơn hàng
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("Shipment")"
+                   href="/Staff/Shipment">
+                    <i class="bi bi-truck"></i> Vận chuyển
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("Product")"
+                   href="/Staff/Product">
+                    <i class="bi bi-box-seam"></i> Sản phẩm & kho
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("Voucher")"
+                   href="/Staff/Voucher">
+                    <i class="bi bi-ticket-perforated"></i> Voucher
+                </a>
+            </li>
+
+            <li class="nav-header">Thông báo</li>
+            <li>
+                <a class="nav-link @IsActive("Notification")"
+                   href="/Staff/Notification">
+                    <i class="bi bi-bell"></i> Thông báo của tôi
+                    @if (unreadNotif > 0)
+                    {
+                        <span class="badge bg-warning text-dark">@unreadNotif</span>
+                    }
+                </a>
+            </li>
+
+            <li class="nav-header">Khác</li>
+            <li>
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house"></i> Về trang chủ
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="/Account/Profile">
+                    <i class="bi bi-person"></i> Thông tin cá nhân
+                </a>
+            </li>
+            <li>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="px-3 mt-2">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-warning w-100">
+                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="osbis-content">
+
+        <nav class="osbis-navbar">
+            <button class="sidebar-toggle" type="button" onclick="document.body.classList.toggle('osbis-toggled')">
+                <i class="bi bi-list"></i>
+            </button>
+            <h1 class="page-title">@ViewData["Title"]</h1>
+            <div class="navbar-right">
+                <span class="clock d-none d-md-inline">
+                    <i class="bi bi-clock"></i>
+                    <span id="osbisClock">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                </span>
+                <a class="notif-btn" href="/Staff/Notification" title="Thông báo">
+                    <i class="bi bi-bell"></i>
+                    @if (unreadNotif > 0)
+                    {
+                        <span class="badge bg-danger rounded-pill">@unreadNotif</span>
+                    }
+                </a>
+                <a class="notif-btn" href="/Account/Profile" title="Hồ sơ">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+            </div>
+        </nav>
+
+        <main class="osbis-main">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @RenderBody()
+        </main>
+
+        <footer class="osbis-footer">
+            <strong>&copy; @DateTime.Now.Year OSBIS</strong> · Staff Console
+        </footer>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    (function () {
+        var el = document.getElementById('osbisClock');
+        if (!el) return;
+        var pad = function (n) { return n < 10 ? '0' + n : n; };
+        setInterval(function () {
+            var d = new Date();
+            el.textContent = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear()
+                + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }, 30000);
+    })();
+
+    // Scroll anchor: giữ nguyên vị trí cuộn khi có layout reflow
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.addEventListener('beforeunload', function () {
+        window.__osbisScrollY = window.scrollY;
+    });
+    window.addEventListener('pageshow', function () {
+        if (typeof window.__osbisScrollY === 'number') {
+            window.scrollTo({ top: window.__osbisScrollY, left: 0, behavior: 'instant' });
+        }
+    });
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
