@@ -1,0 +1,76 @@
+@model OSBIS.Common.PagedResult<OSBIS.Models.Entities.Notification>
+@{
+    ViewData["Title"] = "Thông báo của tôi";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-bell"></i> Thông báo của tôi</h3>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="card-body text-center text-muted py-5">
+            <i class="bi bi-inbox" style="font-size:3rem;"></i>
+            <p class="mt-3 mb-0">Bạn chưa có thông báo nào.</p>
+        </div>
+    }
+    else
+    {
+        <div class="list-group list-group-flush">
+            @foreach (var n in Model.Items)
+            {
+                <div class="list-group-item @(n.IsRead == true ? "" : "list-group-item-warning")">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                @if (n.IsRead != true)
+                                {
+                                    <span class="badge bg-danger rounded-pill">Mới</span>
+                                }
+                                <span class="badge bg-secondary">@n.Type</span>
+                                <h6 class="mb-0 fw-semibold">@n.Title</h6>
+                            </div>
+                            <p class="mb-1">@n.Message</p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> @(n.CreatedAt.HasValue ? n.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "")
+                                @if (!string.IsNullOrEmpty(n.LinkUrl))
+                                {
+                                    <span class="ms-2">
+                                        <i class="bi bi-link-45deg"></i>
+                                        <a href="@n.LinkUrl">@n.LinkUrl</a>
+                                    </span>
+                                }
+                            </small>
+                        </div>
+                        @if (n.IsRead != true)
+                        {
+                            <form asp-action="MarkRead" asp-route-id="@n.NotificationId" method="post" class="flex-shrink-0">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-outline-success" title="Đánh dấu đã đọc">
+                                    <i class="bi bi-check2"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-pageNumber="@i">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+</div>

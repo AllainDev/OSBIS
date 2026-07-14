@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using ORBIS.Models;
+using OSBIS.Models;
 
-namespace ORBIS.Controllers
+namespace OSBIS.Controllers
 {
     public class HomeController : Controller
     {
@@ -15,6 +15,10 @@ namespace ORBIS.Controllers
 
         public IActionResult Index()
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                ViewBag.WelcomeMessage = $"Chào mừng {User.Identity.Name}!";
+            }
             return View();
         }
 

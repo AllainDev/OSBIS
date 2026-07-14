@@ -1,0 +1,142 @@
+@using OSBIS.Models.Enums
+@model OSBIS.Models.ViewModels.Order.OrderDetailViewModel
+@{
+    ViewData["Title"] = $"Đơn {Model.Order.OrderCode}";
+    Layout = "_LayoutStaff";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-receipt"></i> Đơn hàng @Model.Order.OrderCode</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold">Sản phẩm</div>
+                <ul class="list-group list-group-flush">
+                    @foreach (var item in Model.Items)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>@item.ProductName × @item.Quantity</span>
+                            <strong>@item.LineTotal.ToString("N0")đ</strong>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold">Thông tin giao hàng</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Địa chỉ:</strong> @Model.Order.ShippingAddress</p>
+                    <p class="mb-1"><strong>Khách hàng:</strong> @Model.Order.User?.FullName (@Model.Order.User?.Phone)</p>
+                    <p class="mb-0"><strong>Email:</strong> @Model.Order.User?.Email</p>
+                </div>
+            </div>
+
+            @if (Model.Order.Payment != null)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light fw-bold">Thanh toán</div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Phương thức:</strong> @Model.Order.Payment.PaymentMethod</p>
+                        <p class="mb-1"><strong>Số tiền:</strong> @Model.Order.Payment.Amount.ToString("N0")đ</p>
+                        <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-info">@Model.Order.Payment.TransactionStatus</span></p>
+                        @if (!string.IsNullOrEmpty(Model.Order.Payment.BillImageUrl))
+                        {
+                            <p><strong>Bill:</strong> <a href="@Model.Order.Payment.BillImageUrl" target="_blank">Xem ảnh</a></p>
+                        }
+                        @if (Model.Order.Payment.TransactionStatus == PaymentStatus.Pending && Model.Order.Payment.PaymentMethod == PaymentMethod.BankTransfer)
+                        {
+                            <form asp-action="ConfirmPayment" method="post" class="d-flex gap-2 mt-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="paymentId" value="@Model.Order.Payment.PaymentId" />
+                                <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                                <input type="text" name="billImageUrl" class="form-control" placeholder="URL ảnh bill CK (optional)" />
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Xác nhận đã nhận CK
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.Order.Shipment != null)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light fw-bold">Vận đơn</div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Mã vận đơn:</strong> <code>@Model.Order.Shipment.TrackingNumber</code></p>
+                        <p class="mb-1"><strong>Trạng thái:</strong> @Model.Order.Shipment.ShipmentStatus</p>
+                        @if (Model.Order.Shipment.AssignedShipper != null)
+                        {
+                            <p class="mb-0"><strong>Shipper:</strong> @Model.Order.Shipment.AssignedShipper.FullName</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white fw-bold">Tổng đơn</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-7">Trạng thái:</dt>
+                        <dd class="col-5 text-end"><span class="badge bg-info">@Model.Order.OrderStatus</span></dd>
+                        <dt class="col-7">Tạm tính:</dt>
+                        <dd class="col-5 text-end">@Model.Order.SubTotal.ToString("N0")đ</dd>
+                        <dt class="col-7">Phí ship:</dt>
+                        <dd class="col-5 text-end">@Model.Order.ShippingFee.ToString("N0")đ</dd>
+                        @if (Model.Order.DiscountAmount > 0)
+                        {
+                            <dt class="col-7 text-success">Voucher:</dt>
+                            <dd class="col-5 text-end text-success">-@Model.Order.DiscountAmount?.ToString("N0")đ</dd>
+                        }
+                    </dl>
+                    <hr />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Tổng:</span>
+                        <span class="fs-4 fw-bold text-danger">@Model.Order.TotalAmount.ToString("N0")đ</span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        @if (Model.Order.OrderStatus == OrderStatus.Pending || Model.Order.OrderStatus == OrderStatus.Confirmed)
+                        {
+                            <form asp-action="Confirm" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Order.OrderId" />
+                                <button class="btn btn-primary w-100">
+                                    <i class="bi bi-check2-circle"></i> Xác nhận đơn (Pending → Confirmed)
+                                </button>
+                            </form>
+                        }
+                        @if ((Model.Order.OrderStatus == OrderStatus.Confirmed || Model.Order.OrderStatus == OrderStatus.Processing) && Model.Order.Shipment == null)
+                        {
+                            <form asp-action="CreateShipment" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Order.OrderId" />
+                                <button class="btn btn-warning w-100">
+                                    <i class="bi bi-truck"></i> Tạo vận đơn
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

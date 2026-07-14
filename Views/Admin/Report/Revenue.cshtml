@@ -1,0 +1,131 @@
+@model IReadOnlyList<(DateTime Date, decimal Revenue, int OrderCount)>
+@using System.Globalization
+@{
+    ViewData["Title"] = "Báo cáo doanh thu";
+    var fmt = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+@section Styles {
+<style>
+    .chart-card { position: relative; height: 320px; }
+</style>
+}
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-funnel"></i> Khoảng thời gian</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-0 small">Từ ngày</label>
+                <input type="date" name="fromDate" value="@ViewBag.FromDate.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0 small">Đến ngày</label>
+                <input type="date" name="toDate" value="@ViewBag.ToDate.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary"><i class="bi bi-search"></i> Lọc</button>
+            </div>
+            <div class="col-auto">
+                <a asp-action="Dashboard" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-bar-chart"></i> Biểu đồ doanh thu</h3>
+    </div>
+    <div class="card-body chart-card">
+        <canvas id="revChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-table"></i> Chi tiết theo ngày</h3>
+        <div class="card-tools">
+            <span class="badge bg-primary">Tổng: @Model.Sum(x => x.OrderCount) đơn</span>
+            <span class="badge bg-success">@Model.Sum(x => x.Revenue).ToString("N0", fmt) ₫</span>
+        </div>
+    </div>
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Ngày</th>
+                    <th class="text-end">Số đơn</th>
+                    <th class="text-end">Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="3" class="text-center text-muted py-4">Không có dữ liệu trong khoảng này.</td></tr>
+                }
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td>@d.Date.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">@d.OrderCount</td>
+                        <td class="text-end text-success fw-semibold">@d.Revenue.ToString("N0", fmt) ₫</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr class="fw-bold">
+                    <td>Tổng</td>
+                    <td class="text-end">@Model.Sum(x => x.OrderCount)</td>
+                    <td class="text-end text-danger">@Model.Sum(x => x.Revenue).ToString("N0", fmt) ₫</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        const ctx = document.getElementById('revChart');
+        if (ctx) {
+            new Chart(ctx, {
+                data: {
+                    labels: data.map(d => new Date(d.Date).toLocaleDateString('vi-VN')),
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Doanh thu (₫)',
+                            data: data.map(d => d.Revenue),
+                            backgroundColor: 'rgba(30,60,114,0.75)',
+                            borderColor: '#1e3c72',
+                            yAxisID: 'y1'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Số đơn',
+                            data: data.map(d => d.OrderCount),
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255,193,7,0.25)',
+                            tension: 0.35,
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y1: { type: 'linear', position: 'left', ticks: { callback: v => new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(v) } },
+                        y2: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+    })();
+</script>
+}

@@ -1,0 +1,218 @@
+@model OSBIS.Services.Interfaces.DashboardData
+@using System.Globalization
+@{
+    ViewData["Title"] = "Dashboard báo cáo";
+    var fmt = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+@section Styles {
+<style>
+    .chart-card { position: relative; height: 360px; }
+</style>
+}
+
+<!-- Filter quick links -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <strong class="me-2"><i class="bi bi-funnel"></i> Lọc nhanh:</strong>
+            <a asp-action="Revenue" class="btn btn-sm btn-outline-primary"><i class="bi bi-graph-up"></i> Doanh thu theo ngày</a>
+            <a asp-action="Inventory" class="btn btn-sm btn-outline-warning"><i class="bi bi-box"></i> Tồn kho</a>
+            <a asp-action="Dashboard" class="btn btn-sm btn-outline-info"><i class="bi bi-speedometer2"></i> Tổng quan</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="small-box bg-osbis-blue">
+            <div class="inner">
+                <h3>@Model.TodayRevenue.ToString("N0", fmt)<small style="font-size:.9rem;"> ₫</small></h3>
+                <p>Doanh thu hôm nay</p>
+            </div>
+            <i class="bi bi-currency-dollar icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="small-box bg-osbis-green">
+            <div class="inner">
+                <h3>@Model.TodayOrders</h3>
+                <p>Đơn hàng hôm nay</p>
+            </div>
+            <i class="bi bi-cart-check icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="small-box bg-osbis-orange">
+            <div class="inner">
+                <h3>@Model.OrderSummary.Pending</h3>
+                <p>Đang chờ xử lý</p>
+            </div>
+            <i class="bi bi-hourglass-split icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="small-box bg-osbis-red">
+            <div class="inner">
+                <h3>@Model.LowStockCount</h3>
+                <p>Sản phẩm sắp hết</p>
+            </div>
+            <i class="bi bi-exclamation-triangle icon"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="bi bi-bar-chart-line"></i> Doanh thu 30 ngày gần nhất</h3>
+                <div class="card-tools">
+                    <button class="btn btn-tool" data-card-widget="collapse"><i class="bi bi-dash-lg"></i></button>
+                </div>
+            </div>
+            <div class="card-body chart-card">
+                <canvas id="revLine"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="bi bi-pie-chart"></i> Tỉ lệ trạng thái đơn</h3>
+            </div>
+            <div class="card-body chart-card">
+                <canvas id="statusPie"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title"><i class="bi bi-trophy"></i> Top 10 sản phẩm bán chạy</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sản phẩm</th>
+                                <th class="text-end">SL bán</th>
+                                <th class="text-end">Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var i = 1; var mx = Model.TopProducts.FirstOrDefault().TotalSold; if (mx <= 0) mx = 1;
+                            }
+                            @foreach (var p in Model.TopProducts)
+                            {
+                                var pct = (int)Math.Round(p.TotalSold * 100.0 / mx);
+                                <tr>
+                                    <td><span class="badge bg-secondary">@i</span></td>
+                                    <td>
+                                        <div>@p.ProductName</div>
+                                        <div class="osbis-progress mt-1" style="width:120px;">
+                                            <div class="bar" style="width:@pct%;"></div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">@p.TotalSold</td>
+                                    <td class="text-end text-success fw-semibold">@p.Revenue.ToString("N0", fmt) ₫</td>
+                                </tr>
+                                i++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h3 class="card-title"><i class="bi bi-clipboard-data"></i> Tổng quan đơn hàng</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <tr><td><span class="badge bg-warning">Pending</span></td><td class="text-end">@Model.OrderSummary.Pending</td></tr>
+                    <tr><td><span class="badge bg-info">Confirmed</span></td><td class="text-end">@Model.OrderSummary.Confirmed</td></tr>
+                    <tr><td><span class="badge bg-primary">Processing</span></td><td class="text-end">@Model.OrderSummary.Processing</td></tr>
+                    <tr><td><span class="badge bg-primary">Shipped</span></td><td class="text-end">@Model.OrderSummary.Shipped</td></tr>
+                    <tr><td><span class="badge bg-success">Delivered</span></td><td class="text-end">@Model.OrderSummary.Delivered</td></tr>
+                    <tr><td><span class="badge bg-success">Completed</span></td><td class="text-end">@Model.OrderSummary.Completed</td></tr>
+                    <tr><td><span class="badge bg-secondary">Cancelled</span></td><td class="text-end">@Model.OrderSummary.Cancelled</td></tr>
+                    <tr><td><span class="badge bg-secondary">Refunded</span></td><td class="text-end">@Model.OrderSummary.Refunded</td></tr>
+                    <tr class="fw-bold"><td>Tổng cộng</td><td class="text-end">@Model.OrderSummary.Total</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Last30Days));
+
+        const ctx1 = document.getElementById('revLine');
+        if (ctx1) {
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => new Date(d.Date).toLocaleDateString('vi-VN')),
+                    datasets: [
+                        {
+                            label: 'Doanh thu (₫)',
+                            data: data.map(d => d.Revenue),
+                            borderColor: '#1e3c72',
+                            backgroundColor: 'rgba(30,60,114,0.15)',
+                            tension: 0.35,
+                            fill: true,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Số đơn',
+                            data: data.map(d => d.OrderCount),
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255,193,7,0.25)',
+                            tension: 0.35,
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y1: { type: 'linear', position: 'left', ticks: { callback: v => new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(v) } },
+                        y2: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        const s = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrderSummary));
+        const ctx2 = document.getElementById('statusPie');
+        if (ctx2) {
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending','Confirmed','Processing','Shipped','Delivered','Completed','Cancelled','Refunded'],
+                    datasets: [{
+                        data: [s.Pending,s.Confirmed,s.Processing,s.Shipped,s.Delivered,s.Completed,s.Cancelled,s.Refunded],
+                        backgroundColor: ['#ffc107','#17a2b8','#007bff','#fd7e14','#28a745','#20c997','#dc3545','#6c757d'],
+                        borderWidth: 2, borderColor: '#fff'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+            });
+        }
+    })();
+</script>
+}

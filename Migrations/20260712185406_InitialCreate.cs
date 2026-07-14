@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ORBIS.Migrations
+namespace OSBIS.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -107,12 +107,16 @@ namespace ORBIS.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<byte>(type: "tinyint", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: true, defaultValue: true),
+                    FailedLoginCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    LockoutEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastLoginIp = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
                 },
@@ -172,6 +176,35 @@ namespace ORBIS.Migrations
                         principalTable: "Product",
                         principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditLog",
+                columns: table => new
+                {
+                    AuditLogId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Action = table.Column<byte>(type: "tinyint", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    UserAgent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Controller = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    ActionName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsSuccess = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditLog", x => x.AuditLogId);
+                    table.ForeignKey(
+                        name: "FK_AuditLog_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -398,6 +431,21 @@ namespace ORBIS.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_CreatedAt",
+                table: "AuditLog",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_UserId_CreatedAt",
+                table: "AuditLog",
+                columns: new[] { "UserId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_Username_CreatedAt",
+                table: "AuditLog",
+                columns: new[] { "Username", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Cart_SessionId",
                 table: "Cart",
                 column: "SessionId",
@@ -529,6 +577,9 @@ namespace ORBIS.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AuditLog");
+
             migrationBuilder.DropTable(
                 name: "CartItem");
 

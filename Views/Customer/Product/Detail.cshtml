@@ -1,0 +1,151 @@
+@model OSBIS.Models.ViewModels.Product.ProductDetailViewModel
+@{
+    ViewData["Title"] = Model.Product.ProductName;
+    Layout = "_LayoutCustomer";
+    var p = Model.Product;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Product" asp-action="Index" asp-area="Customer">Sản phẩm</a>
+            </li>
+            @if (p.Category?.ParentCategory != null)
+            {
+                <li class="breadcrumb-item">@p.Category.ParentCategory.CategoryName</li>
+            }
+            <li class="breadcrumb-item active">@p.ProductName</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <img src="@(Model.PrimaryImage?.ImageUrl ?? "/images/no-image.png")"
+                     class="card-img-top" alt="@p.ProductName"
+                     style="height:480px; object-fit:cover;" id="mainImage" />
+
+                @if (Model.OtherImages.Any())
+                {
+                    <div class="card-body">
+                        <div class="d-flex gap-2 flex-wrap">
+                            @foreach (var img in Model.OtherImages)
+                            {
+                                <img src="@img.ImageUrl" class="img-thumbnail" style="width:80px; height:80px; cursor:pointer; object-fit:cover;"
+                                     onclick="document.getElementById('mainImage').src='@img.ImageUrl'" alt="@p.ProductName" />
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <h2 class="mb-2">@p.ProductName</h2>
+            <p class="text-muted mb-3">Mã: <strong>@p.SKU</strong></p>
+
+            <div class="mb-3">
+                <span class="display-6 text-danger fw-bold">@p.UnitPrice.ToString("N0") đ</span>
+                <span class="text-muted">/ @p.UnitOfMeasure</span>
+            </div>
+
+            @if (Model.InStock)
+            {
+                <div class="alert alert-success mb-3">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Còn hàng</strong> — còn @Model.AvailableStock.ToString() sản phẩm
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-3">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>Hết hàng</strong> — Vui lòng quay lại sau
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-4">Danh mục:</dt>
+                <dd class="col-sm-8">@(p.Category?.CategoryName ?? "—")</dd>
+
+                <dt class="col-sm-4">Cân nặng:</dt>
+                <dd class="col-sm-8">@p.Weight.ToString("N2") kg</dd>
+
+                <dt class="col-sm-4">Đơn vị:</dt>
+                <dd class="col-sm-8">@p.UnitOfMeasure</dd>
+            </dl>
+
+            <form asp-controller="Cart" asp-action="Add" asp-area="Customer" method="post" class="mt-4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" value="@p.ProductId" />
+                <div class="row g-2 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Số lượng</label>
+                        <input type="number" name="quantity" value="1" min="1" max="@Model.AvailableStock"
+                               class="form-control" style="width:100px" required />
+                    </div>
+                    <div class="col-auto">
+                        @if (Model.InStock)
+                        {
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-secondary btn-lg" disabled>
+                                <i class="bi bi-cart-plus"></i> Hết hàng
+                            </button>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <section class="mt-5">
+        <h4>Mô tả chi tiết</h4>
+        <hr />
+        <div>
+            @if (string.IsNullOrEmpty(p.Description))
+            {
+                <em class="text-muted">Đang cập nhật...</em>
+            }
+            else
+            {
+                <p>@p.Description</p>
+            }
+        </div>
+    </section>
+
+    @if (Model.RelatedProducts.Any())
+    {
+        <section class="mt-5">
+            <h4>Sản phẩm cùng danh mục</h4>
+            <hr />
+            <div class="row g-3">
+                @foreach (var rel in Model.RelatedProducts)
+                {
+                    var primary = rel.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)
+                                  ?? rel.ProductImages?.FirstOrDefault();
+                    <div class="col-md-3 col-6">
+                        <div class="card h-100 shadow-sm">
+                            <a asp-controller="Product" asp-action="Detail" asp-area="Customer" asp-route-id="@rel.ProductId">
+                                <img src="@(primary?.ImageUrl ?? "/images/no-image.png")"
+                                     class="card-img-top" style="height:160px; object-fit:cover;" alt="@rel.ProductName" />
+                            </a>
+                            <div class="card-body p-2">
+                                <small class="d-block text-truncate">
+                                    <a asp-controller="Product" asp-action="Detail" asp-area="Customer"
+                                       asp-route-id="@rel.ProductId" class="text-decoration-none text-dark">@rel.ProductName</a>
+                                </small>
+                                <span class="text-danger fw-bold">@rel.UnitPrice.ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>

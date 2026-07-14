@@ -1,0 +1,88 @@
+@using OSBIS.Models.Enums
+@model OSBIS.Models.Entities.Shipment
+@{
+    ViewData["Title"] = $"Đơn {Model.Order?.OrderCode}";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-truck"></i> @Model.Order?.OrderCode</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold">Thông tin giao hàng</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Mã vận đơn:</strong> <code>@Model.TrackingNumber</code></p>
+                    <p class="mb-1"><strong>Khách:</strong> @Model.Order?.User?.FullName - @Model.Order?.User?.Phone</p>
+                    <p class="mb-1"><strong>Địa chỉ:</strong> @Model.Order?.ShippingAddress</p>
+                    <p class="mb-0"><strong>Tiền thu hộ:</strong> <span class="text-danger fw-bold">@Model.Order?.TotalAmount.ToString("N0")đ</span></p>
+                </div>
+            </div>
+
+            @if (Model.Order?.OrderDetails != null)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light fw-bold">Sản phẩm</div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var d in Model.Order.OrderDetails)
+                        {
+                            <li class="list-group-item">@d.ProductNameSnapshot × @d.Quantity</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold">Cập nhật trạng thái</div>
+                <div class="card-body">
+                    <form asp-action="UpdateStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.ShipmentId" />
+                        <div class="mb-2">
+                            <label class="form-label">Trạng thái mới</label>
+                            <select name="newStatus" class="form-select">
+                                @foreach (ShipmentStatus s in Enum.GetValues<ShipmentStatus>())
+                                {
+                                    <option value="@((int)s)" selected="@(Model.ShipmentStatus == s)">@s</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" name="location" class="form-control" placeholder="Vị trí hiện tại" />
+                        </div>
+                        <div class="mb-2">
+                            <textarea name="note" class="form-control" rows="2" placeholder="Ghi chú"></textarea>
+                        </div>
+                        <button class="btn btn-primary w-100"><i class="bi bi-check2"></i> Cập nhật</button>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model.Order?.Payment?.PaymentMethod == PaymentMethod.COD && Model.Order?.Payment?.TransactionStatus == PaymentStatus.Pending)
+            {
+                <div class="card shadow-sm border-warning">
+                    <div class="card-body">
+                        <form asp-action="ConfirmCOD" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.ShipmentId" />
+                            <button class="btn btn-warning w-100">
+                                <i class="bi bi-cash-coin"></i> Xác nhận đã thu tiền COD
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

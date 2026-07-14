@@ -1,0 +1,178 @@
+@model OSBIS.Models.ViewModels.Product.ProductListViewModel
+@using OSBIS.Repositories.Specifications
+@{
+    ViewData["Title"] = "Sản phẩm";
+    Layout = "_LayoutCustomer";
+    // Defensive: tránh NullReferenceException khi Categories null
+    var categories = Model.Categories ?? new List<OSBIS.Models.Entities.Category>();
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-shop"></i> Sản phẩm</h2>
+
+    <div class="row">
+        <aside class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label class="form-label">Từ khóa</label>
+                            <input type="text" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Tên, SKU..." />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giá từ</label>
+                            <input type="number" name="minPrice" value="@Model.MinPrice" class="form-control" min="0" step="1000" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Đến</label>
+                            <input type="number" name="maxPrice" value="@Model.MaxPrice" class="form-control" min="0" step="1000" />
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="inStockOnly" value="true" checked="@Model.InStockOnly" id="inStockOnly" />
+                            <label class="form-check-label" for="inStockOnly">Chỉ còn hàng</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Sắp xếp</label>
+                            <select name="sortBy" class="form-select">
+                                <option value="CreatedDesc" selected="@(Model.SortBy == ProductSortBy.CreatedDesc)">Mới nhất</option>
+                                <option value="PriceAsc" selected="@(Model.SortBy == ProductSortBy.PriceAsc)">Giá tăng dần</option>
+                                <option value="PriceDesc" selected="@(Model.SortBy == ProductSortBy.PriceDesc)">Giá giảm dần</option>
+                                <option value="NameAsc" selected="@(Model.SortBy == ProductSortBy.NameAsc)">Tên A-Z</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100"><i class="bi bi-search"></i> Lọc</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header">Danh mục</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item @(Model.CategoryId == null ? "active" : "")">
+                        <a asp-controller="Product" asp-action="Index" asp-area="Customer"
+                           class="text-decoration-none @(Model.CategoryId == null ? "text-white" : "text-dark")">Tất cả</a>
+                    </li>
+                    @foreach (var root in categories)
+                    {
+                        <li class="list-group-item @(Model.CategoryId == root.CategoryId ? "active" : "")">
+                            <a asp-controller="Product" asp-action="Index" asp-area="Customer"
+                               asp-route-categoryId="@root.CategoryId"
+                               class="text-decoration-none @(Model.CategoryId == root.CategoryId ? "text-white" : "text-dark")">
+                                <i class="bi bi-folder"></i> @root.CategoryName
+                            </a>
+                        </li>
+                        @if (root.SubCategories != null)
+                        {
+                            foreach (var sub in root.SubCategories)
+                            {
+                                <li class="list-group-item ps-4 @(Model.CategoryId == sub.CategoryId ? "active" : "")">
+                                    <a asp-controller="Product" asp-action="Index" asp-area="Customer"
+                                       asp-route-categoryId="@sub.CategoryId"
+                                       class="text-decoration-none @(Model.CategoryId == sub.CategoryId ? "text-white" : "text-dark")">
+                                        &rarr; @sub.CategoryName
+                                    </a>
+                                </li>
+                            }
+                        }
+                    }
+                </ul>
+            </div>
+        </aside>
+
+        <main class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Tìm thấy <strong>@Model.Products.TotalCount</strong> sản phẩm</span>
+            </div>
+
+            @if (!Model.Products.Items.Any())
+            {
+                <div class="alert alert-info">Không có sản phẩm phù hợp.</div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var p in Model.Products.Items)
+                    {
+                        <div class="col-md-4 col-sm-6">
+                            <div class="card h-100 shadow-sm">
+                                <a asp-controller="Product" asp-action="Detail" asp-area="Customer" asp-route-id="@p.ProductId">
+                                    <img src="@Model.PrimaryImageUrl(p)" class="card-img-top" alt="@p.ProductName"
+                                         style="height:220px; object-fit:cover;" />
+                                </a>
+                                <div class="card-body d-flex flex-column">
+                                    <h6 class="card-title">
+                                        <a asp-controller="Product" asp-action="Detail" asp-area="Customer"
+                                           asp-route-id="@p.ProductId" class="text-decoration-none text-dark">
+                                            @p.ProductName
+                                        </a>
+                                    </h6>
+                                    <p class="text-muted small mb-2">SKU: @p.SKU</p>
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <span class="text-danger fw-bold">@p.UnitPrice.ToString("N0") đ</span>
+                                        @if (Model.IsAvailable(p))
+                                        {
+                                            <span class="badge bg-success">Còn hàng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Hết hàng</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Products.TotalPages > 1)
+                {
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.Products.HasPrevious)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-controller="Product" asp-action="Index" asp-area="Customer"
+                                       asp-route-pageNumber="@(Model.Products.PageNumber - 1)"
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-keyword="@Model.Keyword"
+                                       asp-route-sortBy="@Model.SortBy"
+                                       asp-route-inStockOnly="@Model.InStockOnly">
+                                        &laquo; Trước
+                                    </a>
+                                </li>
+                            }
+                            @for (int i = 1; i <= Model.Products.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.Products.PageNumber ? "active" : "")">
+                                    <a class="page-link"
+                                       asp-controller="Product" asp-action="Index" asp-area="Customer"
+                                       asp-route-pageNumber="@i"
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-keyword="@Model.Keyword"
+                                       asp-route-sortBy="@Model.SortBy">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                            @if (Model.Products.HasNext)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-controller="Product" asp-action="Index" asp-area="Customer"
+                                       asp-route-pageNumber="@(Model.Products.PageNumber + 1)"
+                                       asp-route-categoryId="@Model.CategoryId">
+                                        Sau &raquo;
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+        </main>
+    </div>
+</div>

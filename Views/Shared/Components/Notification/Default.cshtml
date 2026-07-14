@@ -1,0 +1,35 @@
+@model OSBIS.ViewComponents.NotificationBellModel
+@if (Model.IsAuth)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-bell fs-5"></i>
+            @if (Model.UnreadCount > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @Model.UnreadCount
+                </span>
+            }
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+            <li><h6 class="dropdown-header">Thông báo</h6></li>
+            @if (Model.Latest.Any())
+            {
+                @foreach (var n in Model.Latest)
+                {
+                    <li>
+                        <a class="dropdown-item @(n.IsRead == true ? "" : "fw-bold")" href="@(n.LinkUrl ?? "#")">
+                            <div>@n.Title</div>
+                            <small class="text-muted">@n.Message</small>
+                            <small class="text-muted d-block">@n.CreatedAt?.ToString("dd/MM HH:mm")</small>
+                        </a>
+                    </li>
+                }
+            }
+            else
+            {
+                <li><span class="dropdown-item text-muted">Chưa có thông báo</span></li>
+            }
+        </ul>
+    </li>
+}
