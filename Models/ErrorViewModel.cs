@@ -1,4 +1,4 @@
-namespace ORBIS.Models
+namespace OSBIS.Models
 {
     public class ErrorViewModel
     {

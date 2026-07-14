@@ -1,0 +1,76 @@
+@using OSBIS.Models.Enums
+@model OSBIS.Common.PagedResult<OSBIS.Models.Entities.Shipment>
+@{
+    ViewData["Title"] = "Quản lý vận đơn";
+    Layout = "_LayoutStaff";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-truck"></i> Quản lý vận đơn</h2>
+
+    <form method="get" class="mb-3">
+        <select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Tất cả --</option>
+            @foreach (ShipmentStatus s in Enum.GetValues<ShipmentStatus>())
+            {
+                <option value="@((int)s)" selected="@(ViewBag.StatusFilter != null && (int)ViewBag.StatusFilter == (int)s)">
+                    @s
+                </option>
+            }
+        </select>
+    </form>
+
+    <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã vận đơn</th>
+                        <th>Đơn hàng</th>
+                        <th>Shipper</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Items)
+                    {
+                        <tr>
+                            <td><code>@s.TrackingNumber</code></td>
+                            <td>@(s.Order?.OrderCode ?? "N/A")</td>
+                            <td>@(s.AssignedShipper?.FullName ?? "<chưa gán>")</td>
+                            <td><span class="badge bg-primary">@s.ShipmentStatus</span></td>
+                            <td>@s.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <a asp-action="Detail" asp-route-id="@s.ShipmentId" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Items.Any())
+            {
+                <p class="text-center text-muted my-3">Không có vận đơn nào.</p>
+            }
+        </div>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-3">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-pageNumber="@i"
+                           asp-route-status="@ViewBag.StatusFilter">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

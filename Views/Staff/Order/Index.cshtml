@@ -1,0 +1,95 @@
+@using OSBIS.Models.Enums
+@model OSBIS.Common.PagedResult<OSBIS.Models.Entities.Order>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "_LayoutStaff";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-box-seam"></i> Quản lý đơn hàng</h2>
+
+    <form method="get" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    @foreach (OrderStatus s in Enum.GetValues<OrderStatus>())
+                    {
+                        <option value="@((int)s)" selected="@(ViewBag.StatusFilter != null && (int)ViewBag.StatusFilter == (int)s)">
+                            @s
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-7">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control"
+                       placeholder="Tìm theo mã đơn, email hoặc tên khách..." />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100"><i class="bi bi-search"></i> Lọc</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Model.Items)
+                    {
+                        <tr>
+                            <td><code>@o.OrderCode</code></td>
+                            <td>@(o.User?.FullName ?? "N/A")</td>
+                            <td>@o.OrderDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@o.TotalAmount.ToString("N0")đ</td>
+                            <td>
+                                @if (o.Payment != null)
+                                {
+                                    <small>@o.Payment.PaymentMethod - @o.Payment.TransactionStatus</small>
+                                }
+                            </td>
+                            <td><span class="badge bg-info">@o.OrderStatus</span></td>
+                            <td>
+                                <a asp-action="Detail" asp-route-id="@o.OrderId" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Items.Any())
+            {
+                <p class="text-center text-muted my-3">Không có đơn hàng nào.</p>
+            }
+        </div>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-3">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-pageNumber="@i"
+                           asp-route-status="@ViewBag.StatusFilter"
+                           asp-route-search="@ViewBag.Search">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

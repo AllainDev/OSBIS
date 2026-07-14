@@ -1,0 +1,131 @@
+@using OSBIS.Models.Enums
+@using System.Globalization
+@model OSBIS.Common.PagedResult<OSBIS.Models.Entities.Voucher>
+@{
+    ViewData["Title"] = "Quản lý Voucher";
+    var fmt = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="bi bi-ticket-perforated"></i> Danh sách Voucher</h3>
+        <div class="card-tools">
+            <a asp-action="Create" class="btn btn-sm btn-success">
+                <i class="bi bi-plus-circle"></i> Tạo voucher
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Loại</th>
+                    <th class="text-end">Giá trị</th>
+                    <th class="text-end">Đơn tối thiểu</th>
+                    <th>Đã dùng / Giới hạn</th>
+                    <th>Thời hạn</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-4">Chưa có voucher nào.</td></tr>
+                }
+                @foreach (var v in Model.Items)
+                {
+                    var used = v.UsedCount;
+                    var limit = v.UsageLimit;
+                    var pct = limit > 0 ? (int)((decimal)used * 100m / limit) : 0;
+                    <tr>
+                        <td><code class="fs-6">@v.VoucherCode</code></td>
+                        <td>
+                            @if (v.DiscountType == DiscountType.Percent)
+                            {
+                                <span class="badge bg-info">Phần trăm</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Tiền mặt</span>
+                            }
+                        </td>
+                        <td class="text-end fw-semibold">
+                            @if (v.DiscountType == DiscountType.Percent)
+                            {
+                                @v.DiscountValue.ToString("N0")<small>%</small>
+                            }
+                            else
+                            {
+                                @v.DiscountValue.ToString("N0", fmt)<small> ₫</small>
+                            }
+                        </td>
+                        <td class="text-end">@((v.MinOrderValue ?? 0).ToString("N0", fmt)) ₫</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span>@used / @limit</span>
+                                <div class="osbis-progress" style="width:80px;">
+                                    <div class="bar @(pct > 80 ? "bg-danger" : pct > 50 ? "bg-warning" : "")" style="width:@pct%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <small>
+                                <i class="bi bi-calendar-event"></i> @v.StartDate.ToString("dd/MM/yy")
+                                <i class="bi bi-arrow-right"></i>
+                                <i class="bi bi-calendar-x"></i> @v.EndDate.ToString("dd/MM/yy")
+                            </small>
+                        </td>
+                        <td>
+                            @if (v.IsActive == true && v.EndDate >= DateTime.UtcNow)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else if (v.EndDate < DateTime.UtcNow)
+                            {
+                                <span class="badge bg-secondary">Hết hạn</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Inactive</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a asp-action="Edit" asp-route-id="@v.VoucherId" class="btn btn-outline-primary" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="UsageHistory" asp-route-id="@v.VoucherId" class="btn btn-outline-info" title="Lịch sử">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@v.VoucherId" method="post" class="d-inline"
+                                      onsubmit="return confirm('Vô hiệu voucher này?');">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-outline-danger" title="Vô hiệu"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pageNumber="@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

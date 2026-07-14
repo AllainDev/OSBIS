@@ -1,0 +1,53 @@
+@using OSBIS.Models.Enums
+@model IReadOnlyList<OSBIS.Models.Entities.Shipment>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-truck"></i> Đơn hàng của tôi</h2>
+
+    <form method="get" class="mb-3">
+        <select name="status" class="form-select" onchange="this.form.submit()" style="max-width: 300px;">
+            <option value="">-- Tất cả --</option>
+            @foreach (ShipmentStatus s in Enum.GetValues<ShipmentStatus>())
+            {
+                <option value="@((int)s)" selected="@(ViewBag.StatusFilter != null && (int)ViewBag.StatusFilter == (int)s)">
+                    @s
+                </option>
+            }
+        </select>
+    </form>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var s in Model)
+            {
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="mb-0"><code>@s.TrackingNumber</code></h5>
+                                <span class="badge bg-primary">@s.ShipmentStatus</span>
+                            </div>
+                            <p class="mb-1"><strong>Đơn:</strong> @s.Order?.OrderCode</p>
+                            <p class="mb-1"><strong>Khách:</strong> @s.Order?.User?.FullName - @s.Order?.User?.Phone</p>
+                            <p class="mb-1"><strong>Địa chỉ:</strong> @s.Order?.ShippingAddress</p>
+                            <p class="mb-1"><strong>Trọng lượng:</strong> @s.TotalWeight kg</p>
+                            <p class="mb-3"><strong>Tiền thu hộ (COD):</strong> @s.Order?.TotalAmount.ToString("N0")đ</p>
+                            <a asp-action="Detail" asp-route-id="@s.ShipmentId" class="btn btn-primary w-100">
+                                <i class="bi bi-arrow-right"></i> Xem & cập nhật
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Không có đơn hàng nào.</div>
+    }
+</div>

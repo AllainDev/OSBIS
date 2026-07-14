@@ -1,0 +1,132 @@
+@model OSBIS.Models.ViewModels.Product.InventoryBatchViewModel
+@{
+    ViewData["Title"] = "Lô hàng";
+    Layout = "_LayoutStaff";
+    var product = ViewBag.Product as OSBIS.Models.Entities.Product;
+}
+
+<div class="container py-4">
+    <h2><i class="bi bi-boxes"></i> Lô hàng</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Sản phẩm</a></li>
+            <li class="breadcrumb-item"><a asp-action="Edit" asp-route-id="@Model.ProductId">@Model.ProductName</a></li>
+            <li class="breadcrumb-item active">Lô</li>
+        </ol>
+    </nav>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header">Lô hiện có (@Model.Batches.Count lô)</div>
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã lô</th>
+                            <th>SX</th>
+                            <th>HSD</th>
+                            <th class="text-end">SL</th>
+                            <th class="text-end">Giá vốn</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Batches.Any())
+                        {
+                            <tr><td colspan="6" class="text-muted text-center py-3">Chưa có lô hàng nào.</td></tr>
+                        }
+                        @foreach (var b in Model.Batches)
+                        {
+                            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                            var isExpired = b.ExpiryDate < today;
+                            var daysLeft = (b.ExpiryDate.DayNumber - today.DayNumber);
+                            var isExpiringSoon = !isExpired && daysLeft <= 30;
+                            var badge = isExpired ? "bg-danger" : (isExpiringSoon ? "bg-warning text-dark" : "bg-success");
+
+                            <tr>
+                                <td><code>@b.BatchCode</code></td>
+                                <td>@b.ManufactureDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @b.ExpiryDate.ToString("dd/MM/yyyy")
+                                    <span class="badge @badge ms-1">
+                                        @if (isExpired) { <text>Đã hết hạn</text> }
+                                        else if (isExpiringSoon) { <text>Còn @daysLeft ngày</text> }
+                                        else { <text>Còn @daysLeft ngày</text> }
+                                    </span>
+                                </td>
+                                <td class="text-end">@b.Quantity</td>
+                                <td class="text-end">@b.CostPrice.ToString("N0") đ</td>
+                                <td class="text-end"></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (product != null)
+            {
+                <div class="alert alert-info mt-3">
+                    <strong>Tổng tồn kho:</strong> @product.TotalStock sản phẩm &middot; <strong>Đã đặt:</strong> @product.ReservedQuantity
+                </div>
+            }
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header">Thêm lô mới</div>
+                <div class="card-body">
+                    <form asp-action="AddBatch" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ProductId" />
+
+                        <div class="mb-3">
+                            <label asp-for="BatchCode" class="form-label"></label>
+                            <input asp-for="BatchCode" class="form-control" placeholder="VD: LOT-2026-01" />
+                            <span asp-validation-for="BatchCode" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ManufactureDate" class="form-label"></label>
+                                <input asp-for="ManufactureDate" type="date" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ExpiryDate" class="form-label"></label>
+                                <input asp-for="ExpiryDate" type="date" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Quantity" class="form-label"></label>
+                                <input asp-for="Quantity" type="number" min="1" class="form-control" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CostPrice" class="form-label"></label>
+                                <input asp-for="CostPrice" type="number" step="1000" min="0" class="form-control" />
+                                <span asp-validation-for="CostPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-plus-circle"></i> Thêm lô
+                        </button>
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle"></i> Khi thêm, tổng tồn kho sản phẩm sẽ tự động cộng thêm số lượng.
+                        </small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

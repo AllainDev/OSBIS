@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ORBIS.Data;
+using OSBIS.Data;
 
 #nullable disable
 
-namespace ORBIS.Migrations
+namespace OSBIS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260712031547_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260712200854_AddPhase1_5Entities")]
+    partial class AddPhase1_5Entities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,71 @@ namespace ORBIS.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Cart", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.AuditLog", b =>
+                {
+                    b.Property<long>("AuditLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AuditLogId"));
+
+                    b.Property<byte>("Action")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("ActionName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Controller")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("AuditLogId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("Username", "CreatedAt");
+
+                    b.ToTable("AuditLog", (string)null);
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.Cart", b =>
                 {
                     b.Property<int>("CartId")
                         .ValueGeneratedOnAdd()
@@ -62,7 +126,7 @@ namespace ORBIS.Migrations
                     b.ToTable("Cart", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.CartItem", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.CartItem", b =>
                 {
                     b.Property<int>("CartItemId")
                         .ValueGeneratedOnAdd()
@@ -89,7 +153,7 @@ namespace ORBIS.Migrations
                     b.ToTable("CartItem", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Category", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Category", b =>
                 {
                     b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
@@ -129,7 +193,7 @@ namespace ORBIS.Migrations
                     b.ToTable("Category", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.InventoryBatch", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.InventoryBatch", b =>
                 {
                     b.Property<int>("BatchId")
                         .ValueGeneratedOnAdd()
@@ -168,7 +232,50 @@ namespace ORBIS.Migrations
                     b.ToTable("InventoryBatch", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Order", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<bool?>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LinkUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAt");
+
+                    b.ToTable("Notification", (string)null);
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.Order", b =>
                 {
                     b.Property<int>("OrderId")
                         .ValueGeneratedOnAdd()
@@ -180,6 +287,10 @@ namespace ORBIS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("decimal(18,2)")
                         .HasDefaultValue(0m);
+
+                    b.Property<string>("OrderCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("OrderDate")
                         .ValueGeneratedOnAdd()
@@ -215,14 +326,17 @@ namespace ORBIS.Migrations
 
                     b.HasKey("OrderId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("OrderCode")
+                        .IsUnique();
 
                     b.HasIndex("VoucherId");
+
+                    b.HasIndex("UserId", "OrderDate");
 
                     b.ToTable("Order", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.OrderDetail", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.OrderDetail", b =>
                 {
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
@@ -247,7 +361,7 @@ namespace ORBIS.Migrations
                     b.ToTable("OrderDetail", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Payment", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
                         .ValueGeneratedOnAdd()
@@ -288,7 +402,7 @@ namespace ORBIS.Migrations
                     b.ToTable("Payment", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Product", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Product", b =>
                 {
                     b.Property<int>("ProductId")
                         .ValueGeneratedOnAdd()
@@ -360,7 +474,7 @@ namespace ORBIS.Migrations
                     b.ToTable("Product", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.ProductImage", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.ProductImage", b =>
                 {
                     b.Property<int>("ImageId")
                         .ValueGeneratedOnAdd()
@@ -392,7 +506,7 @@ namespace ORBIS.Migrations
                     b.ToTable("ProductImage", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Review", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Review", b =>
                 {
                     b.Property<int>("ReviewId")
                         .ValueGeneratedOnAdd()
@@ -437,7 +551,7 @@ namespace ORBIS.Migrations
                     b.ToTable("Review", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Role", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Role", b =>
                 {
                     b.Property<byte>("RoleId")
                         .HasColumnType("tinyint");
@@ -454,13 +568,16 @@ namespace ORBIS.Migrations
                     b.ToTable("Role", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Shipment", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Shipment", b =>
                 {
                     b.Property<int>("ShipmentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShipmentId"));
+
+                    b.Property<int?>("AssignedShipperId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("EstimatedDeliveryDate")
                         .HasColumnType("datetime2");
@@ -488,13 +605,79 @@ namespace ORBIS.Migrations
 
                     b.HasKey("ShipmentId");
 
+                    b.HasIndex("AssignedShipperId");
+
                     b.HasIndex("OrderId")
                         .IsUnique();
 
                     b.ToTable("Shipment", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.User", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.ShipmentTracking", b =>
+                {
+                    b.Property<int>("TrackingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TrackingId"));
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ShipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("TrackingId");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("ShipmentId", "UpdatedAt");
+
+                    b.ToTable("ShipmentTracking", (string)null);
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.SystemConfig", b =>
+                {
+                    b.Property<string>("ConfigKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConfigValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConfigKey");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.ToTable("SystemConfig", (string)null);
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.User", b =>
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
@@ -509,23 +692,42 @@ namespace ORBIS.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("FailedLoginCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool?>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastLoginIp")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("LockoutEnd")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Phone")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<byte>("RoleId")
                         .HasColumnType("tinyint");
@@ -537,7 +739,8 @@ namespace ORBIS.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("UserId");
 
@@ -552,7 +755,7 @@ namespace ORBIS.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.UserAddress", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.UserAddress", b =>
                 {
                     b.Property<int>("AddressId")
                         .ValueGeneratedOnAdd()
@@ -599,7 +802,7 @@ namespace ORBIS.Migrations
                     b.ToTable("UserAddress", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Voucher", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Voucher", b =>
                 {
                     b.Property<int>("VoucherId")
                         .ValueGeneratedOnAdd()
@@ -652,25 +855,69 @@ namespace ORBIS.Migrations
                     b.ToTable("Voucher", (string)null);
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Cart", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.VoucherUsage", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.User", "User")
+                    b.Property<int>("VoucherUsageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VoucherUsageId"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VoucherId")
+                        .HasColumnType("int");
+
+                    b.HasKey("VoucherUsageId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VoucherId", "UserId");
+
+                    b.ToTable("VoucherUsage", (string)null);
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.AuditLog", b =>
+                {
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.Cart", b =>
+                {
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
                         .WithOne("Cart")
-                        .HasForeignKey("ORBIS.Models.Entities.Cart", "UserId")
+                        .HasForeignKey("OSBIS.Models.Entities.Cart", "UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.CartItem", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.CartItem", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Cart", "Cart")
+                    b.HasOne("OSBIS.Models.Entities.Cart", "Cart")
                         .WithMany("CartItems")
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ORBIS.Models.Entities.Product", "Product")
+                    b.HasOne("OSBIS.Models.Entities.Product", "Product")
                         .WithMany("CartItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -681,9 +928,9 @@ namespace ORBIS.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Category", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Category", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Category", "ParentCategory")
+                    b.HasOne("OSBIS.Models.Entities.Category", "ParentCategory")
                         .WithMany("SubCategories")
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -691,9 +938,9 @@ namespace ORBIS.Migrations
                     b.Navigation("ParentCategory");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.InventoryBatch", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.InventoryBatch", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Product", "Product")
+                    b.HasOne("OSBIS.Models.Entities.Product", "Product")
                         .WithMany("InventoryBatches")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -702,15 +949,26 @@ namespace ORBIS.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Order", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Notification", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.User", "User")
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.Order", b =>
+                {
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ORBIS.Models.Entities.Voucher", "Voucher")
+                    b.HasOne("OSBIS.Models.Entities.Voucher", "Voucher")
                         .WithMany("Orders")
                         .HasForeignKey("VoucherId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -720,15 +978,15 @@ namespace ORBIS.Migrations
                     b.Navigation("Voucher");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.OrderDetail", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.OrderDetail", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Order", "Order")
+                    b.HasOne("OSBIS.Models.Entities.Order", "Order")
                         .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ORBIS.Models.Entities.Product", "Product")
+                    b.HasOne("OSBIS.Models.Entities.Product", "Product")
                         .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -739,20 +997,20 @@ namespace ORBIS.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Payment", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Payment", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Order", "Order")
+                    b.HasOne("OSBIS.Models.Entities.Order", "Order")
                         .WithOne("Payment")
-                        .HasForeignKey("ORBIS.Models.Entities.Payment", "OrderId")
+                        .HasForeignKey("OSBIS.Models.Entities.Payment", "OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Product", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Product", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Category", "Category")
+                    b.HasOne("OSBIS.Models.Entities.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -761,9 +1019,9 @@ namespace ORBIS.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.ProductImage", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.ProductImage", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Product", "Product")
+                    b.HasOne("OSBIS.Models.Entities.Product", "Product")
                         .WithMany("ProductImages")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -772,21 +1030,21 @@ namespace ORBIS.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Review", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Review", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Order", "Order")
+                    b.HasOne("OSBIS.Models.Entities.Order", "Order")
                         .WithMany("Reviews")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ORBIS.Models.Entities.Product", "Product")
+                    b.HasOne("OSBIS.Models.Entities.Product", "Product")
                         .WithMany("Reviews")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ORBIS.Models.Entities.User", "User")
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -799,20 +1057,55 @@ namespace ORBIS.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Shipment", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Shipment", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Order", "Order")
+                    b.HasOne("OSBIS.Models.Entities.User", "AssignedShipper")
+                        .WithMany()
+                        .HasForeignKey("AssignedShipperId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OSBIS.Models.Entities.Order", "Order")
                         .WithOne("Shipment")
-                        .HasForeignKey("ORBIS.Models.Entities.Shipment", "OrderId")
+                        .HasForeignKey("OSBIS.Models.Entities.Shipment", "OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AssignedShipper");
 
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.User", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.ShipmentTracking", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.Role", "Role")
+                    b.HasOne("OSBIS.Models.Entities.Shipment", "Shipment")
+                        .WithMany("ShipmentTrackings")
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OSBIS.Models.Entities.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Shipment");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.SystemConfig", b =>
+                {
+                    b.HasOne("OSBIS.Models.Entities.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.User", b =>
+                {
+                    b.HasOne("OSBIS.Models.Entities.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -821,9 +1114,9 @@ namespace ORBIS.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.UserAddress", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.UserAddress", b =>
                 {
-                    b.HasOne("ORBIS.Models.Entities.User", "User")
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
                         .WithMany("UserAddresses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -832,19 +1125,46 @@ namespace ORBIS.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Cart", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.VoucherUsage", b =>
+                {
+                    b.HasOne("OSBIS.Models.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OSBIS.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OSBIS.Models.Entities.Voucher", "Voucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Voucher");
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.Cart", b =>
                 {
                     b.Navigation("CartItems");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Category", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Category", b =>
                 {
                     b.Navigation("Products");
 
                     b.Navigation("SubCategories");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Order", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Order", b =>
                 {
                     b.Navigation("OrderDetails");
 
@@ -855,7 +1175,7 @@ namespace ORBIS.Migrations
                     b.Navigation("Shipment");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Product", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Product", b =>
                 {
                     b.Navigation("CartItems");
 
@@ -868,13 +1188,20 @@ namespace ORBIS.Migrations
                     b.Navigation("Reviews");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Role", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Role", b =>
                 {
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.User", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Shipment", b =>
                 {
+                    b.Navigation("ShipmentTrackings");
+                });
+
+            modelBuilder.Entity("OSBIS.Models.Entities.User", b =>
+                {
+                    b.Navigation("AuditLogs");
+
                     b.Navigation("Cart");
 
                     b.Navigation("Orders");
@@ -884,7 +1211,7 @@ namespace ORBIS.Migrations
                     b.Navigation("UserAddresses");
                 });
 
-            modelBuilder.Entity("ORBIS.Models.Entities.Voucher", b =>
+            modelBuilder.Entity("OSBIS.Models.Entities.Voucher", b =>
                 {
                     b.Navigation("Orders");
                 });

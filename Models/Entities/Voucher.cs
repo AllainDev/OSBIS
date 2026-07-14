@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using OSBIS.Models.Enums;
 
-namespace ORBIS.Models.Entities
+namespace OSBIS.Models.Entities
 {
     public class Voucher
     {
         public int VoucherId { get; set; }
         public string VoucherCode { get; set; } = null!;
-        public byte DiscountType { get; set; }
+        public DiscountType DiscountType { get; set; }
         public decimal DiscountValue { get; set; }
         public decimal? MinOrderValue { get; set; }
         public decimal? MaxDiscountAmount { get; set; }

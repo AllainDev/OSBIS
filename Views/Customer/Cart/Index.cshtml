@@ -1,0 +1,104 @@
+@model OSBIS.Models.ViewModels.Cart.CartSummaryViewModel
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-cart3"></i> Giỏ hàng của bạn</h2>
+
+    @if (Model.IsEmpty)
+    {
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+            <h5>Giỏ hàng trống</h5>
+            <a asp-controller="Product" asp-action="Index" asp-area="Customer"
+               class="btn btn-primary mt-2">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover bg-white shadow-sm rounded">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Đơn giá</th>
+                        <th style="width: 180px;">Số lượng</th>
+                        <th>Thành tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" class="img-thumbnail me-2" style="width: 60px; height: 60px; object-fit: cover;" />
+                                    }
+                                    <div>
+                                        <a asp-controller="Product" asp-action="Detail" asp-area="Customer"
+                                           asp-route-id="@item.ProductId" class="text-decoration-none fw-bold">
+                                            @item.ProductName
+                                        </a>
+                                        <div class="text-muted small">SKU: @item.SKU</div>
+                                        @if (item.Quantity > item.AvailableStock)
+                                        {
+                                            <div class="text-danger small">Vượt quá tồn kho (còn @item.AvailableStock)</div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@item.UnitPrice.ToString("N0")đ / @item.UnitOfMeasure</td>
+                            <td>
+                                <form asp-controller="Cart" asp-action="UpdateQuantity"
+                                      method="post" class="d-flex">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1"
+                                           max="@item.AvailableStock" class="form-control form-control-sm me-1"
+                                           style="width: 80px;" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="fw-bold text-danger">@item.LineTotal.ToString("N0")đ</td>
+                            <td>
+                                <form asp-controller="Cart" asp-action="Remove" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                    <button class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
+                        <td colspan="2">
+                            <span class="fs-4 fw-bold text-danger">@Model.SubTotal.ToString("N0")đ</span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-controller="Product" asp-action="Index" asp-area="Customer"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
+            </a>
+            <a asp-controller="Checkout" asp-action="Index" asp-area="Customer"
+               class="btn btn-primary btn-lg">
+                Tiến hành thanh toán <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    }
+</div>

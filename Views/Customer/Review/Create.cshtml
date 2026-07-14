@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Đánh giá sản phẩm";
+    Layout = "_LayoutCustomer";
+    var orderId = (int)ViewBag.OrderId;
+    var productId = (int)ViewBag.ProductId;
+    var orderCode = (string?)ViewBag.OrderCode;
+    var productName = (string?)ViewBag.ProductName;
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-star"></i> Đánh giá sản phẩm</h2>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <p class="mb-1"><strong>Sản phẩm:</strong> @productName</p>
+            <p class="mb-0"><strong>Đơn hàng:</strong> <code>@orderCode</code></p>
+        </div>
+    </div>
+
+    <form asp-controller="Review" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="orderId" value="@orderId" />
+        <input type="hidden" name="productId" value="@productId" />
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Đánh giá của bạn:</label>
+                    <div class="rating-input">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <label class="me-2">
+                                <input type="radio" name="rating" value="@i" required /> @i sao
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nhận xét (không bắt buộc):</label>
+                    <textarea name="comment" class="form-control" rows="4"
+                              placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Order" asp-action="Detail" asp-route-id="@orderId" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Gửi đánh giá
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

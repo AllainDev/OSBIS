@@ -1,0 +1,99 @@
+@using OSBIS.Models.Entities
+@using OSBIS.Models.Enums
+@{
+    ViewData["Title"] = "Theo dõi đơn hàng";
+    Layout = "_LayoutCustomer";
+    var order = (Order)ViewBag.Order!;
+    var shipment = (Shipment?)ViewBag.Shipment;
+    var trackings = (List<ShipmentTracking>)ViewBag.Trackings!;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-truck"></i> Theo dõi đơn hàng @order.OrderCode</h2>
+        <a asp-controller="Order" asp-action="Detail" asp-route-id="@order.OrderId" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại chi tiết
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-bold">
+            <i class="bi bi-info-circle"></i> Thông tin vận đơn
+        </div>
+        <div class="card-body">
+            @if (shipment != null)
+            {
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Mã vận đơn:</strong><br />
+                        <code>@shipment.TrackingNumber</code>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Đơn vị vận chuyển:</strong><br />
+                        @shipment.LogisticsProvider
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Trạng thái hiện tại:</strong><br />
+                        <span class="badge bg-primary fs-6">@shipment.ShipmentStatus</span>
+                    </div>
+                </div>
+                @if (shipment.EstimatedDeliveryDate.HasValue)
+                {
+                    <div class="mt-2">
+                        <strong>Dự kiến giao:</strong> @shipment.EstimatedDeliveryDate.Value.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                }
+                @if (shipment.AssignedShipper != null)
+                {
+                    <div class="mt-2">
+                        <strong>Shipper phụ trách:</strong> @shipment.AssignedShipper.FullName - @shipment.AssignedShipper.Phone
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Đơn hàng chưa được tạo vận đơn. Vui lòng đợi staff xử lý.
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light fw-bold">
+            <i class="bi bi-clock-history"></i> Lịch sử vận chuyển
+        </div>
+        <div class="card-body">
+            @if (trackings.Any())
+            {
+                <ul class="timeline list-unstyled">
+                    @foreach (var t in trackings)
+                    {
+                        <li class="mb-3 ps-4 border-start border-3 border-primary">
+                            <div class="d-flex justify-content-between">
+                                <strong class="text-primary">@t.Status</strong>
+                                <small class="text-muted">@t.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(t.Location))
+                            {
+                                <div><i class="bi bi-geo-alt"></i> @t.Location</div>
+                            }
+                            @if (!string.IsNullOrEmpty(t.Note))
+                            {
+                                <div class="text-muted">@t.Note</div>
+                            }
+                            @if (t.UpdatedByUser != null)
+                            {
+                                <small class="text-muted">Cập nhật bởi: @t.UpdatedByUser.FullName</small>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Chưa có cập nhật nào.</p>
+            }
+        </div>
+    </div>
+</div>
