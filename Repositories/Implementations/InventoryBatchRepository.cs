@@ -40,7 +40,7 @@ namespace OSBIS.Repositories.Implementations
             var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(withinDays));
             return await _dbSet.AsNoTracking()
                 .Include(b => b.Product)
-                .Where(b => b.ExpiryDate >= today && b.ExpiryDate <= cutoff)
+                .Where(b => b.ExpiryDate <= cutoff)
                 .OrderBy(b => b.ExpiryDate)
                 .ToListAsync();
         }

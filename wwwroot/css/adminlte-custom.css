@@ -50,6 +50,14 @@ body.osbis-lte {
     z-index: 1030;
     box-shadow: 2px 0 8px rgba(0,0,0,.08);
 }
+.osbis-sidebar::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
+.osbis-sidebar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 
 .osbis-sidebar .brand {
     padding: 1.1rem 1.25rem;

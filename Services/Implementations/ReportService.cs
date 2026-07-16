@@ -109,6 +109,7 @@ namespace OSBIS.Services.Implementations
 
         public async Task<IReadOnlyList<InventoryItem>> GetInventoryStatusAsync()
         {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
             var paged = await _uow.Products.GetPagedAsync(new Repositories.Specifications.ProductFilterSpec { PageNumber = 1, PageSize = 1000 });
             var items = paged.Items.Select(p => new InventoryItem
             {
@@ -116,7 +117,8 @@ namespace OSBIS.Services.Implementations
                 ProductName = p.ProductName,
                 SKU = p.SKU,
                 TotalStock = p.TotalStock,
-                ReservedQuantity = p.ReservedQuantity
+                ReservedQuantity = p.ReservedQuantity,
+                ExpiredQuantity = p.InventoryBatches?.Where(b => b.ExpiryDate <= today).Sum(b => b.Quantity) ?? 0
             }).ToList();
 
             return items;

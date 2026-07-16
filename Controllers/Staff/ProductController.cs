@@ -234,6 +234,18 @@ namespace OSBIS.Controllers.Staff
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddBatch(InventoryBatchViewModel vm)
         {
+            // Auto-generate BatchCode if empty
+            if (string.IsNullOrWhiteSpace(vm.BatchCode))
+                vm.BatchCode = $"LOT-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
+
+            // Business rule: ExpiryDate must be after ManufactureDate
+            if (vm.ExpiryDate <= vm.ManufactureDate)
+                ModelState.AddModelError(nameof(vm.ExpiryDate), "Hạn sử dụng phải sau ngày sản xuất.");
+
+            // Cho phép nhập lô hết hạn (phục vụ kiểm kho hoặc test)
+            // if (vm.ExpiryDate < DateOnly.FromDateTime(DateTime.UtcNow))
+            //     ModelState.AddModelError(nameof(vm.ExpiryDate), "Không thể nhập lô hàng đã hết hạn sử dụng.");
+
             if (!ModelState.IsValid)
             {
                 var product = await _productService.GetProductDetailAsync(vm.ProductId);
@@ -253,7 +265,7 @@ namespace OSBIS.Controllers.Staff
                     Quantity = vm.Quantity,
                     CostPrice = vm.CostPrice
                 });
-                TempData["Success"] = "Đã thêm lô hàng.";
+                TempData["Success"] = $"Đã thêm lô hàng [{vm.BatchCode}] với {vm.Quantity} sản phẩm.";
             }
             catch (InvalidOperationException ex)
             {
@@ -261,6 +273,18 @@ namespace OSBIS.Controllers.Staff
             }
 
             return RedirectToAction(nameof(Batches), new { id = vm.ProductId });
+        }
+
+        // POST: /Staff/Product/DeleteBatch
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteBatch(int batchId, int productId)
+        {
+            var success = await _inventoryBatchService.DeleteBatchAsync(batchId);
+            TempData[success ? "Success" : "Error"] = success
+                ? "Đã xóa lô hàng và cập nhật tồn kho."
+                : "Không tìm thấy lô hàng để xóa.";
+            return RedirectToAction(nameof(Batches), new { id = productId });
         }
 
         // POST: /Staff/Product/DeleteImage

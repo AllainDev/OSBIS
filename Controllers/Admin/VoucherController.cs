@@ -8,7 +8,7 @@ using OSBIS.Services.Interfaces;
 
 namespace OSBIS.Controllers.Admin
 {
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     [Area("Admin")]
     public class VoucherController : Controller
     {

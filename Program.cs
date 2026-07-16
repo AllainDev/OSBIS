@@ -182,6 +182,7 @@ builder.Services.AddSession(options =>
 // BACKGROUND JOBS (Phase 5)
 // ============================================================
 builder.Services.AddHostedService<OSBIS.Jobs.CartCleanupJob>();
+builder.Services.AddHostedService<OSBIS.Jobs.ExpiringBatchNotificationJob>();
 
 var app = builder.Build();
 

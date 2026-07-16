@@ -5,21 +5,29 @@ using OSBIS.Services.Interfaces;
 
 namespace OSBIS.Controllers.Admin
 {
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     [Area("Admin")]
     public class DashboardController : Controller
     {
         private readonly IReportService _reportService;
         private readonly IAuditLogService _auditLogService;
+        private readonly INotificationService _notificationService;
 
-        public DashboardController(IReportService reportService, IAuditLogService auditLogService)
+        public DashboardController(IReportService reportService, IAuditLogService auditLogService, INotificationService notificationService)
         {
             _reportService = reportService;
             _auditLogService = auditLogService;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
         {
+            var userId = User.GetUserId();
+            if (userId.HasValue)
+            {
+                await _notificationService.GenerateExpiringBatchNotificationsAsync(userId.Value);
+            }
+
             ViewBag.UserName = User.GetFullName() ?? User.Identity?.Name;
             ViewBag.Role = User.GetRole();
 

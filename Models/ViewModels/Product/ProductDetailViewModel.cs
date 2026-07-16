@@ -22,7 +22,7 @@ namespace OSBIS.Models.ViewModels.Product
             .OrderBy(i => i.SortOrder);
 
         public int AvailableStock =>
-            Product.TotalStock - Product.ReservedQuantity;
+            Product.GetAvailableStock();
 
         public bool InStock => AvailableStock > 0;
     }

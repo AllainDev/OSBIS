@@ -20,7 +20,9 @@ namespace OSBIS.Repositories.Implementations
 
         public async Task<Product?> GetByIdAsync(int id)
         {
-            return await _dbSet.FirstOrDefaultAsync(p => p.ProductId == id && p.IsDeleted != true);
+            return await _dbSet
+                .Include(p => p.InventoryBatches)
+                .FirstOrDefaultAsync(p => p.ProductId == id && p.IsDeleted != true);
         }
 
         public async Task<Product?> GetByIdWithDetailsAsync(int id)
@@ -72,6 +74,7 @@ namespace OSBIS.Repositories.Implementations
             return await _dbSet.AsNoTracking()
                 .Where(p => idList.Contains(p.ProductId))
                 .Include(p => p.ProductImages.Where(i => i.IsPrimary == true))
+                .Include(p => p.InventoryBatches)
                 .ToListAsync();
         }
 

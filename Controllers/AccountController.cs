@@ -34,7 +34,15 @@ namespace OSBIS.Controllers
         public IActionResult Login(string? returnUrl = null, string? timeout = null)
         {
             if (User.Identity?.IsAuthenticated == true)
-                return RedirectToAction("Index", "Home");
+            {
+                var role = User.GetRole();
+                return role switch
+                {
+                    AppConstants.Roles.Admin => Redirect("/Admin/Dashboard"),
+                    AppConstants.Roles.Staff => Redirect("/Staff/Dashboard"),
+                    _ => RedirectToAction("Index", "Home")
+                };
+            }
 
             ViewData["ReturnUrl"] = returnUrl;
             ViewData["Timeout"] = timeout;
@@ -120,8 +128,8 @@ namespace OSBIS.Controllers
 
             return roleName switch
             {
-                AppConstants.Roles.Admin => RedirectToAction("Index", "User", new { area = "Admin" }),
-                AppConstants.Roles.Staff => RedirectToAction("Index", "User", new { area = "Admin" }),
+                AppConstants.Roles.Admin => Redirect("/Admin/Dashboard"),
+                AppConstants.Roles.Staff => Redirect("/Staff/Dashboard"),
                 _ => RedirectToAction("Index", "Home")
             };
         }

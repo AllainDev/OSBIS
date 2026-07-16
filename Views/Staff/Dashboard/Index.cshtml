@@ -9,164 +9,284 @@
 
 @section Styles {
 <style>
-    .chart-card { position: relative; height: 320px; }
+    /* Premium Glassmorphism & Modern UI styling */
+    .dashboard-container {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    .welcome-banner {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .welcome-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .stat-card {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 16px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: scale(1.03);
+    }
+    .stat-card i.bg-icon {
+        position: absolute;
+        right: -15px;
+        bottom: -20px;
+        font-size: 6rem;
+        opacity: 0.15;
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover i.bg-icon {
+        transform: rotate(-10deg) scale(1.1);
+        opacity: 0.25;
+    }
+    .stat-revenue { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .stat-orders { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+    .stat-customers { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .stat-products { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    
+    .stat-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    .stat-desc {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+    
+    .chart-card { position: relative; height: 320px; padding: 1rem; }
     .chart-card canvas { max-height: 280px; }
+    
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 1rem 1.25rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        color: #334155;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 0.75rem;
+    }
+    .quick-action-btn i {
+        font-size: 1.25rem;
+        padding: 10px;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .quick-action-btn:hover {
+        background: #fff;
+        border-color: #cbd5e1;
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        color: #0f172a;
+    }
+    .btn-blue i { color: #3b82f6; }
+    .btn-orange i { color: #f59e0b; }
+    .btn-green i { color: #10b981; }
+    .btn-purple i { color: #8b5cf6; }
+
+    .table-custom th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .table-custom td {
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    /* Top products progress bar */
+    .premium-progress {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .premium-progress .bar {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        border-radius: 10px;
+    }
 </style>
 }
 
-<!-- Welcome banner -->
-<div class="card bg-osbis-primary text-white mb-3">
-    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div>
-            <h4 class="mb-1"><i class="bi bi-hand-thumbs-up"></i> Xin chào, @User.GetFullName()!</h4>
-            <div class="text-white-50">@DateTime.Now.ToString("dddd, dd/MM/yyyy", fmt) — Chúc bạn một ngày làm việc hiệu quả.</div>
+<div class="dashboard-container">
+    <!-- Welcome banner -->
+    <div class="welcome-banner d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div style="z-index: 2;">
+            <h3 class="fw-bold mb-2">Xin chào, @User.GetFullName()! 👋</h3>
+            <p class="mb-0" style="opacity: 0.9; font-size: 1.1rem;">Hôm nay là @DateTime.Now.ToString("dddd, dd/MM/yyyy", fmt). Chúc bạn một ngày làm việc tràn đầy năng lượng!</p>
         </div>
-        <div>
-            <a href="/Staff/Order" class="btn btn-warning"><i class="bi bi-cart-check"></i> Xử lý đơn hàng</a>
+        <div style="z-index: 2;">
+            <a href="/Staff/Order" class="btn btn-light btn-lg fw-bold rounded-pill px-4 shadow-sm" style="color: #4f46e5;">
+                <i class="bi bi-cart-check-fill me-2"></i> Xử lý đơn hàng ngay
+            </a>
         </div>
     </div>
-</div>
 
-<!-- ========== INFO BOXES ========== -->
-<div class="row">
-    <div class="col-12 col-sm-6 col-md-3">
-        <div class="info-box shadow-sm" style="border-left-color:#1e3c72;">
-            <span class="info-box-icon bg-osbis-primary"><i class="bi bi-currency-dollar"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Doanh thu hôm nay</span>
-                <span class="info-box-number">@Model.TodayRevenue.ToString("N0", fmt) ₫</span>
-                <span class="info-box-more"><i class="bi bi-clock"></i> @DateTime.Now.ToString("HH:mm")</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3">
-        <div class="info-box shadow-sm" style="border-left-color:#11998e;">
-            <span class="info-box-icon" style="background:linear-gradient(135deg,#11998e,#38ef7d);"><i class="bi bi-cart-check"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Đơn hàng hôm nay</span>
-                <span class="info-box-number">@Model.TodayOrders</span>
-                <span class="info-box-more"><i class="bi bi-hourglass-split text-warning"></i> @Model.PendingOrders chờ xử lý</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3">
-        <div class="info-box shadow-sm" style="border-left-color:#cb2d3e;">
-            <span class="info-box-icon" style="background:linear-gradient(135deg,#cb2d3e,#ef473a);"><i class="bi bi-people"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Khách hàng</span>
-                <span class="info-box-number">@Model.TotalCustomers</span>
-                <span class="info-box-more"><i class="bi bi-person-check"></i> Đã đăng ký</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3">
-        <div class="info-box shadow-sm" style="border-left-color:#f7971e;">
-            <span class="info-box-icon" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#212529;"><i class="bi bi-box-seam"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Sản phẩm</span>
-                <span class="info-box-number">@Model.TotalProducts</span>
-                <span class="info-box-more"><i class="bi bi-exclamation-triangle text-danger"></i> @Model.LowStockCount sắp hết</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ========== SMALL BOXES ========== -->
-<div class="row">
-    <div class="col-lg-3 col-md-6">
-        <div class="small-box bg-osbis-blue">
-            <div class="inner">
-                <h3>@Model.OrderSummary.Pending</h3>
-                <p>Đơn chờ xác nhận</p>
-            </div>
-            <i class="bi bi-hourglass-split icon"></i>
-            <a href="/Staff/Order" class="small-box-footer">Xem chi tiết <i class="bi bi-arrow-right-circle"></i></a>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="small-box bg-osbis-green">
-            <div class="inner">
-                <h3>@Model.OrderSummary.Processing</h3>
-                <p>Đang xử lý / Đóng gói</p>
-            </div>
-            <i class="bi bi-box icon"></i>
-            <a href="/Staff/Order" class="small-box-footer">Xem chi tiết <i class="bi bi-arrow-right-circle"></i></a>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="small-box bg-osbis-orange">
-            <div class="inner">
-                <h3>@Model.OrderSummary.Shipped</h3>
-                <p>Đang vận chuyển</p>
-            </div>
-            <i class="bi bi-truck icon"></i>
-            <a href="/Staff/Shipment" class="small-box-footer">Theo dõi <i class="bi bi-arrow-right-circle"></i></a>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="small-box bg-osbis-red">
-            <div class="inner">
-                <h3>@Model.LowStockCount</h3>
-                <p>Sản phẩm sắp hết</p>
-            </div>
-            <i class="bi bi-exclamation-triangle icon"></i>
-            <a href="/Staff/Product" class="small-box-footer">Bổ sung kho <i class="bi bi-arrow-right-circle"></i></a>
-        </div>
-    </div>
-</div>
-
-<!-- ========== CHARTS ========== -->
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="bi bi-bar-chart-line"></i> Đơn hàng & Doanh thu — 30 ngày gần nhất</h3>
-                <div class="card-tools">
-                    <button class="btn btn-tool" data-card-widget="collapse"><i class="bi bi-dash-lg"></i></button>
+    <!-- ========== WARNING BOX ========== -->
+    @if (Model.ExpiringBatches.Any())
+    {
+        var expiredCount = Model.ExpiringBatches.Count(b => b.ExpiryDate < DateOnly.FromDateTime(DateTime.UtcNow));
+        var soonCount = Model.ExpiringBatches.Count - expiredCount;
+        <div class="alert alert-warning shadow-sm mb-4" style="background: linear-gradient(to right, #fffbeb, #fef3c7); border: 1px solid #fde68a; border-left: 5px solid #f59e0b; border-radius: 12px;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Cảnh báo Lô hàng sắp hỏng</h5>
+                    <p class="mb-0 text-dark" style="font-size: 0.95rem;">
+                        @if(expiredCount > 0 && soonCount > 0) { 
+                            <span>Có <strong>@expiredCount</strong> lô hàng <span class="text-danger fw-bold">đã hết hạn</span> và <strong>@soonCount</strong> lô sắp hết hạn.</span>
+                        } 
+                        else if(expiredCount > 0) {
+                            <span>Có <strong>@expiredCount</strong> lô hàng <span class="text-danger fw-bold">đã hết hạn</span> chờ tiêu hủy.</span>
+                        }
+                        else {
+                            <span>Có <strong>@soonCount</strong> lô hàng sắp hết hạn trong 30 ngày tới. Yêu cầu kiểm tra.</span>
+                        }
+                    </p>
+                </div>
+                <div>
+                    <a href="/Staff/Product?inStockOnly=true" class="btn btn-warning fw-bold px-4" style="border-radius: 8px;">
+                        <i class="bi bi-search me-1"></i> Kiểm tra kho
+                    </a>
                 </div>
             </div>
-            <div class="card-body chart-card">
-                <canvas id="staffTrendChart"></canvas>
+        </div>
+    }
+
+    <!-- ========== STAT BOXES ========== -->
+    <div class="row">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-revenue">
+                <i class="bi bi-currency-dollar bg-icon"></i>
+                <div class="stat-title">Doanh thu hôm nay</div>
+                <div class="stat-value">@Model.TodayRevenue.ToString("N0", fmt) ₫</div>
+                <div class="stat-desc"><i class="bi bi-clock"></i> Cập nhật lúc @DateTime.Now.ToString("HH:mm")</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-orders">
+                <i class="bi bi-bag-check bg-icon"></i>
+                <div class="stat-title">Đơn hàng hôm nay</div>
+                <div class="stat-value">@Model.TodayOrders</div>
+                <div class="stat-desc"><i class="bi bi-hourglass-split"></i> @Model.PendingOrders chờ xác nhận</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-customers">
+                <i class="bi bi-people bg-icon"></i>
+                <div class="stat-title">Khách hàng</div>
+                <div class="stat-value">@Model.TotalCustomers</div>
+                <div class="stat-desc"><i class="bi bi-person-plus"></i> Đã đăng ký hệ thống</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card stat-products">
+                <i class="bi bi-box-seam bg-icon"></i>
+                <div class="stat-title">Sản phẩm</div>
+                <div class="stat-value">@Model.TotalProducts</div>
+                <div class="stat-desc"><i class="bi bi-exclamation-triangle"></i> @Model.LowStockCount sản phẩm sắp hết</div>
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="bi bi-pie-chart"></i> Trạng thái đơn hàng</h3>
-                <div class="card-tools">
-                    <button class="btn btn-tool" data-card-widget="collapse"><i class="bi bi-dash-lg"></i></button>
+
+    <!-- ========== CHARTS ========== -->
+    <div class="row mt-2">
+        <div class="col-lg-8 mb-4">
+            <div class="glass-card h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-graph-up-arrow text-primary me-2"></i> Tổng quan 30 ngày qua</h5>
+                </div>
+                <div class="chart-card">
+                    <canvas id="staffTrendChart"></canvas>
                 </div>
             </div>
-            <div class="card-body chart-card">
-                <canvas id="staffPieChart"></canvas>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="glass-card h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-pie-chart-fill text-warning me-2"></i> Trạng thái đơn</h5>
+                </div>
+                <div class="chart-card">
+                    <canvas id="staffPieChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ========== TOP PRODUCTS + QUICK ACTIONS ========== -->
-<div class="row">
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="card-header bg-osbis-primary text-white">
-                <h3 class="card-title"><i class="bi bi-trophy"></i> Top 10 sản phẩm bán chạy</h3>
-            </div>
-            <div class="card-body p-0">
+    <!-- ========== TOP PRODUCTS + QUICK ACTIONS ========== -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-trophy-fill text-warning me-2"></i> Top 10 sản phẩm bán chạy</h5>
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-custom mb-0">
                         <thead>
                             <tr>
                                 <th style="width:50px;">#</th>
                                 <th>Sản phẩm</th>
-                                <th class="text-end">SL bán</th>
+                                <th class="text-end">Đã bán</th>
                                 <th class="text-end">Doanh thu</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (!topProducts.Any())
                             {
-                                <tr><td colspan="4" class="text-center text-muted py-4">Chưa có dữ liệu bán hàng.</td></tr>
+                                <tr><td colspan="4" class="text-center text-muted py-5">Chưa có dữ liệu bán hàng trong kỳ.</td></tr>
                             }
                             @{
                                 var idx = 1;
@@ -177,15 +297,15 @@
                             {
                                 var pct = max > 0 ? (int)((decimal)p.TotalSold * 100m / max) : 0;
                                 <tr>
-                                    <td><span class="badge bg-secondary">@idx</span></td>
+                                    <td><span class="badge bg-light text-dark border">@idx</span></td>
                                     <td>
-                                        <div class="fw-semibold">@p.ProductName</div>
-                                        <div class="osbis-progress mt-1" style="width:140px;">
+                                        <div class="fw-semibold mb-1">@p.ProductName</div>
+                                        <div class="premium-progress" style="width:160px;">
                                             <div class="bar" style="width:@pct%;"></div>
                                         </div>
                                     </td>
-                                    <td class="text-end">@p.TotalSold</td>
-                                    <td class="text-end text-success fw-semibold">@p.Revenue.ToString("N0", fmt) ₫</td>
+                                    <td class="text-end fw-bold">@p.TotalSold</td>
+                                    <td class="text-end text-success fw-bold">@p.Revenue.ToString("N0", fmt) ₫</td>
                                 </tr>
                                 idx++;
                             }
@@ -194,46 +314,37 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-lg-5">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="bi bi-lightning-charge"></i> Thao tác nhanh</h3>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="/Staff/Order" class="btn btn-outline-primary text-start">
-                        <i class="bi bi-cart-check"></i> Xử lý đơn hàng
+        <div class="col-lg-4 mb-4">
+            <div class="glass-card p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-lightning-charge-fill text-danger me-2"></i> Lối tắt nghiệp vụ</h5>
+                <div class="d-flex flex-column">
+                    <a href="/Staff/Order" class="quick-action-btn btn-blue">
+                        <i class="bi bi-cart-check"></i> 
+                        <span>Xử lý đơn hàng</span>
                     </a>
-                    <a href="/Staff/Shipment" class="btn btn-outline-warning text-start">
-                        <i class="bi bi-truck"></i> Quản lý vận chuyển
+                    <a href="/Staff/Shipment" class="quick-action-btn btn-orange">
+                        <i class="bi bi-truck"></i> 
+                        <span>Quản lý vận chuyển</span>
                     </a>
-                    <a href="/Staff/Product" class="btn btn-outline-success text-start">
-                        <i class="bi bi-box-seam"></i> Cập nhật sản phẩm & kho
+                    <a href="/Staff/Product" class="quick-action-btn btn-green">
+                        <i class="bi bi-box-seam"></i> 
+                        <span>Cập nhật Sản phẩm & Kho</span>
                     </a>
-                    <a href="/Staff/Voucher" class="btn btn-outline-info text-start">
-                        <i class="bi bi-ticket-perforated"></i> Quản lý Voucher
-                    </a>
-                    <a href="/Staff/Notification" class="btn btn-outline-secondary text-start">
-                        <i class="bi bi-bell"></i> Thông báo của tôi
+                    <a href="/Staff/Notification" class="quick-action-btn btn-purple">
+                        <i class="bi bi-bell"></i> 
+                        <span>Thông báo của tôi</span>
                     </a>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h3 class="card-title"><i class="bi bi-info-circle"></i> Quy trình xử lý đơn</h3>
-            </div>
-            <div class="card-body">
-                <ol class="ps-3 mb-0">
-                    <li>Xem đơn hàng mới (Pending)</li>
-                    <li>Xác nhận đơn (Confirmed)</li>
-                    <li>Đóng gói & tạo vận đơn (Processing → Shipped)</li>
-                    <li>Gán shipper & theo dõi</li>
-                    <li>Đối soát thanh toán (nếu CK)</li>
-                </ol>
+            <div class="glass-card p-4 bg-light">
+                <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-info-circle me-1"></i> Lưu ý quy trình</h6>
+                <ul class="text-muted small ps-3 mb-0" style="line-height: 1.6;">
+                    <li>Kiểm tra đơn <strong>Chờ xác nhận</strong> ít nhất 2 lần/ngày.</li>
+                    <li>Chỉ xác nhận đóng gói khi kho có đủ sản phẩm.</li>
+                    <li>Sản phẩm hiển thị cảnh báo đỏ cần báo cấp trên nhập hàng gấp.</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -256,18 +367,22 @@
                             type: 'bar',
                             label: 'Số đơn hàng',
                             data: orders,
-                            backgroundColor: 'rgba(30,60,114,0.7)',
-                            borderColor: '#1e3c72',
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderRadius: 6,
                             yAxisID: 'y2'
                         },
                         {
                             type: 'line',
                             label: 'Doanh thu (₫)',
                             data: revenue,
-                            borderColor: '#ffc107',
-                            backgroundColor: 'rgba(255,193,7,0.15)',
-                            tension: 0.35,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
                             fill: true,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#8b5cf6',
+                            pointRadius: 4,
                             yAxisID: 'y1'
                         }
                     ]
@@ -277,8 +392,13 @@
                     maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { position: 'top' },
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { family: 'Inter', weight: 'bold' } } },
                         tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: 'Inter', size: 13 },
+                            bodyFont: { family: 'Inter', size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
                             callbacks: {
                                 label: function (ctx) {
                                     if (ctx.dataset.yAxisID === 'y1') {
@@ -290,7 +410,8 @@
                         }
                     },
                     scales: {
-                        y1: { type: 'linear', position: 'left', ticks: { callback: v => new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(v) } },
+                        x: { grid: { display: false } },
+                        y1: { type: 'linear', position: 'left', grid: { borderDash: [4, 4] }, ticks: { callback: v => new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(v) } },
                         y2: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, beginAtZero: true }
                     }
                 }
@@ -307,16 +428,21 @@
                     labels: pieLabels,
                     datasets: [{
                         data: pieValues,
-                        backgroundColor: ['#ffc107','#17a2b8','#007bff','#fd7e14','#28a745','#20c997','#dc3545'],
-                        borderWidth: 2,
-                        borderColor: '#fff'
+                        backgroundColor: ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#64748b','#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8 } } },
-                    cutout: '55%'
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { usePointStyle: true, padding: 15, font: { family: 'Inter' } } 
+                        } 
+                    },
+                    cutout: '65%'
                 }
             });
         }

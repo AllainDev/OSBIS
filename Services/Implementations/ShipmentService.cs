@@ -134,7 +134,7 @@ namespace OSBIS.Services.Implementations
                 {
                     ShipmentId = shipment.ShipmentId,
                     Status = ShipmentStatus.Pending,
-                    Location = "Kho ORBIS",
+                    Location = "Kho OSBIS",
                     Note = "Đã tạo vận đơn",
                     UpdatedBy = staffId,
                     UpdatedAt = DateTime.UtcNow

@@ -79,7 +79,7 @@ namespace OSBIS.Services.Implementations
                     if (product == null)
                         return new PlaceOrderResult { Success = false, Message = "Sản phẩm không tồn tại." };
 
-                    var available = product.TotalStock - product.ReservedQuantity;
+                    var available = product.GetAvailableStock();
                     if (available < item.Quantity)
                     {
                         await _uow.RollbackTransactionAsync();

@@ -27,8 +27,8 @@ namespace OSBIS.Services.Implementations
         private int SmtpPort => int.TryParse(_config["Email:SmtpPort"], out var p) ? p : 587;
         private string SmtpUsername => _config["Email:SmtpUsername"] ?? "";
         private string SmtpPassword => _config["Email:SmtpPassword"] ?? "";
-        private string FromEmail => _config["Email:FromEmail"] ?? "noreply@orbis.com";
-        private string FromName => _config["Email:FromName"] ?? "ORBIS";
+        private string FromEmail => _config["Email:FromEmail"] ?? "noreply@OSBIS.com";
+        private string FromName => _config["Email:FromName"] ?? "OSBIS";
 
         /// <summary>Kiểm tra nếu SMTP đã được cấu hình đầy đủ (không phải placeholder).</summary>
         private bool IsSmtpConfigured()
@@ -40,10 +40,10 @@ namespace OSBIS.Services.Implementations
 
         public async Task SendOrderConfirmationAsync(Order order)
         {
-            var subject = $"[ORBIS] Xác nhận đơn hàng #{order.OrderCode}";
+            var subject = $"[OSBIS] Xác nhận đơn hàng #{order.OrderCode}";
             var body = $@"
 <html><body style='font-family: Arial;'>
-<h2 style='color: #d63384;'>Cảm ơn bạn đã đặt hàng tại ORBIS!</h2>
+<h2 style='color: #d63384;'>Cảm ơn bạn đã đặt hàng tại OSBIS!</h2>
 <p>Đơn hàng <strong>{order.OrderCode}</strong> đã được tạo thành công với tổng giá trị <strong>{order.TotalAmount:N0}đ</strong>.</p>
 <ul>
     <li>Phí vận chuyển: {order.ShippingFee:N0}đ</li>
@@ -51,7 +51,7 @@ namespace OSBIS.Services.Implementations
     <li>Tổng cộng: <strong>{order.TotalAmount:N0}đ</strong></li>
 </ul>
 <p>Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.</p>
-<p>Trân trọng,<br/>Đội ngũ ORBIS</p>
+<p>Trân trọng,<br/>Đội ngũ OSBIS</p>
 </body></html>";
 
             await SendAsync(order.User?.Email ?? "", subject, body, $"OrderConfirmation-{order.OrderCode}");
@@ -59,13 +59,13 @@ namespace OSBIS.Services.Implementations
 
         public async Task SendShippingUpdateAsync(Order order, string statusNote)
         {
-            var subject = $"[ORBIS] Cập nhật vận chuyển #{order.OrderCode}";
+            var subject = $"[OSBIS] Cập nhật vận chuyển #{order.OrderCode}";
             var body = $@"
 <html><body style='font-family: Arial;'>
 <h2 style='color: #0d6efd;'>Cập nhật vận chuyển</h2>
 <p>Đơn hàng <strong>{order.OrderCode}</strong>: {statusNote}</p>
-<p>Bạn có thể theo dõi đơn hàng chi tiết tại trang chủ ORBIS.</p>
-<p>Trân trọng,<br/>Đội ngũ ORBIS</p>
+<p>Bạn có thể theo dõi đơn hàng chi tiết tại trang chủ OSBIS.</p>
+<p>Trân trọng,<br/>Đội ngũ OSBIS</p>
 </body></html>";
 
             await SendAsync(order.User?.Email ?? "", subject, body, $"ShippingUpdate-{order.OrderCode}");
@@ -74,7 +74,7 @@ namespace OSBIS.Services.Implementations
         public async Task SendPaymentConfirmationAsync(Payment payment)
         {
             var orderCode = payment.Order?.OrderCode ?? $"#{payment.OrderId}";
-            var subject = $"[ORBIS] Xác nhận thanh toán đơn hàng {orderCode}";
+            var subject = $"[OSBIS] Xác nhận thanh toán đơn hàng {orderCode}";
             var body = $@"
 <html><body style='font-family: Arial;'>
 <h2 style='color: #198754;'>Thanh toán thành công</h2>
@@ -82,7 +82,7 @@ namespace OSBIS.Services.Implementations
 <p>Phương thức: <strong>{payment.PaymentMethod}</strong></p>
 <p>Mã giao dịch: <code>{payment.ProviderTransactionId}</code></p>
 <p>Cảm ơn bạn đã mua hàng!</p>
-<p>Trân trọng,<br/>Đội ngũ ORBIS</p>
+<p>Trân trọng,<br/>Đội ngũ OSBIS</p>
 </body></html>";
 
             await SendAsync(payment.Order?.User?.Email ?? "", subject, body, $"PaymentConfirmation-{orderCode}");
@@ -90,10 +90,10 @@ namespace OSBIS.Services.Implementations
 
         public async Task SendVoucherCodeAsync(User user, Voucher voucher)
         {
-            var subject = $"[ORBIS] Bạn có voucher mới: {voucher.VoucherCode}";
+            var subject = $"[OSBIS] Bạn có voucher mới: {voucher.VoucherCode}";
             var body = $@"
 <html><body style='font-family: Arial;'>
-<h2 style='color: #fd7e14;'>Voucher mới từ ORBIS!</h2>
+<h2 style='color: #fd7e14;'>Voucher mới từ OSBIS!</h2>
 <p>Xin chào <strong>{user.FullName}</strong>,</p>
 <p>Bạn vừa nhận được voucher <strong>{voucher.VoucherCode}</strong>:</p>
 <ul>
@@ -101,8 +101,8 @@ namespace OSBIS.Services.Implementations
     <li>Đơn tối thiểu: {voucher.MinOrderValue:N0}đ</li>
     <li>Hiệu lực: {voucher.StartDate:dd/MM/yyyy} - {voucher.EndDate:dd/MM/yyyy}</li>
 </ul>
-<p>Sử dụng ngay tại <a href='/'>ORBIS</a>!</p>
-<p>Trân trọng,<br/>Đội ngũ ORBIS</p>
+<p>Sử dụng ngay tại <a href='/'>OSBIS</a>!</p>
+<p>Trân trọng,<br/>Đội ngũ OSBIS</p>
 </body></html>";
 
             await SendAsync(user.Email ?? "", subject, body, $"VoucherCode-{voucher.VoucherCode}");

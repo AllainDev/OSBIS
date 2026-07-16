@@ -10,10 +10,9 @@ namespace OSBIS.Models.ViewModels.Product
 
         public IReadOnlyList<InventoryBatch> Batches { get; set; } = new List<InventoryBatch>();
 
-        [Required(ErrorMessage = "Nhập mã lô")]
         [StringLength(50)]
-        [Display(Name = "Mã lô")]
-        public string BatchCode { get; set; } = null!;
+        [Display(Name = "Mã lô (tự động nếu để trống)")]
+        public string? BatchCode { get; set; }
 
         [Required]
         [DataType(DataType.Date)]

@@ -24,6 +24,7 @@ namespace OSBIS.Services.Interfaces
         public List<(DateTime Date, decimal Revenue, int OrderCount)> Last30Days { get; set; } = new();
         public List<(int ProductId, string ProductName, int TotalSold, decimal Revenue)> TopProducts { get; set; } = new();
         public OrderSummary OrderSummary { get; set; } = new();
+        public IReadOnlyList<InventoryBatch> ExpiringBatches { get; set; } = new List<InventoryBatch>();
     }
 
     public class InventoryItem
@@ -33,7 +34,8 @@ namespace OSBIS.Services.Interfaces
         public string SKU { get; set; } = string.Empty;
         public int TotalStock { get; set; }
         public int ReservedQuantity { get; set; }
-        public int Available => TotalStock - ReservedQuantity;
+        public int ExpiredQuantity { get; set; }
+        public int Available => Math.Max(0, TotalStock - ReservedQuantity - ExpiredQuantity);
     }
 
     public class OrderSummary

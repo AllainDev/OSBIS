@@ -48,7 +48,10 @@ namespace OSBIS.Repositories.Specifications
                 filter = Combine(filter, p => p.UnitPrice <= MaxPrice.Value);
 
             if (InStockOnly)
-                filter = Combine(filter, p => p.TotalStock - p.ReservedQuantity > 0);
+            {
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                filter = Combine(filter, p => p.TotalStock - p.ReservedQuantity - (p.InventoryBatches.Where(b => b.ExpiryDate <= today).Sum(b => (int?)b.Quantity) ?? 0) > 0);
+            }
 
             return filter;
         }

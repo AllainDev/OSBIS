@@ -46,6 +46,6 @@ namespace OSBIS.Models.ViewModels.Product
             return primary?.ImageUrl ?? "/images/no-image.png";
         }
 
-        public bool IsAvailable(ProductEntity p) => (p.TotalStock - p.ReservedQuantity) > 0;
+        public bool IsAvailable(ProductEntity p) => p.GetAvailableStock() > 0;
     }
 }

@@ -92,5 +92,67 @@ namespace OSBIS.Services.Implementations
                 $"Voucher {voucher.VoucherCode} - {voucher.DiscountValue}% giảm giá.",
                 "/");
         }
+        public async Task GenerateExpiringBatchNotificationsAsync(int? userId = null)
+        {
+            var expiringBatches = await _uow.InventoryBatches.GetExpiringSoonAsync(30);
+            if (expiringBatches.Count == 0) return;
+
+            List<int> targetUsers;
+            if (userId.HasValue)
+            {
+                targetUsers = new List<int> { userId.Value };
+            }
+            else
+            {
+                var staffUsers = await _uow.Users.GetUsersByRoleAsync("Staff");
+                var adminUsers = await _uow.Users.GetUsersByRoleAsync("Admin");
+                targetUsers = staffUsers.Concat(adminUsers).Select(u => u.UserId).Distinct().ToList();
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            foreach (var uid in targetUsers)
+            {
+                // Retrieve recent notifications for this user to avoid duplicates
+                var latestNotifs = await _uow.Notifications.GetLatestByUserAsync(uid, 100);
+
+                foreach (var batch in expiringBatches)
+                {
+                    var isExpired = batch.ExpiryDate < today;
+                    var type = $"ExpiringBatch_{batch.BatchId}";
+                    var typeExpired = $"ExpiredBatch_{batch.BatchId}";
+
+                    // Nếu đã thông báo expired rồi thì thôi
+                    if (latestNotifs.Any(n => n.Type == typeExpired)) continue;
+
+                    // Nếu chưa hết hạn, và đã thông báo expiring rồi thì thôi
+                    if (!isExpired && latestNotifs.Any(n => n.Type == type)) continue;
+
+                    // Đảm bảo không spam quá nhiều
+                    if (isExpired)
+                    {
+                        var productName = batch.Product?.ProductName ?? "Sản phẩm";
+                        await CreateAsync(
+                            uid,
+                            typeExpired,
+                            $"Lô {batch.BatchCode} ĐÃ HẾT HẠN",
+                            $"Lô hàng {batch.BatchCode} của {productName} đã hết hạn vào {batch.ExpiryDate:dd/MM/yyyy}. Yêu cầu tiêu hủy!",
+                            $"/Staff/Product/Batches/{batch.ProductId}"
+                        );
+                    }
+                    else
+                    {
+                        var productName = batch.Product?.ProductName ?? "Sản phẩm";
+                        await CreateAsync(
+                            uid,
+                            type,
+                            $"Cảnh báo lô {batch.BatchCode} sắp hỏng",
+                            $"Lô hàng {batch.BatchCode} của {productName} sẽ hết hạn vào {batch.ExpiryDate:dd/MM/yyyy}. Vui lòng kiểm tra kho!",
+                            $"/Staff/Product/Batches/{batch.ProductId}"
+                        );
+                    }
+                }
+            }
+        }
     }
 }

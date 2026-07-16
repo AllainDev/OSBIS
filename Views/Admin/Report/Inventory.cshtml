@@ -1,6 +1,10 @@
 @model IReadOnlyList<OSBIS.Services.Interfaces.InventoryItem>
 @{
     ViewData["Title"] = "Báo cáo tồn kho";
+    if (User.IsInRole(OSBIS.Common.AppConstants.Roles.Staff))
+    {
+        Layout = "~/Views/Shared/_LayoutStaff.cshtml";
+    }
     var lowStock = Model.Count(x => x.Available < 10);
     var medium = Model.Count(x => x.Available >= 10 && x.Available < 30);
     var ok = Model.Count(x => x.Available >= 30);
@@ -40,7 +44,7 @@
     <div class="card-header">
         <h3 class="card-title"><i class="bi bi-box-seam"></i> Tình trạng tồn kho</h3>
         <div class="card-tools">
-            <a asp-controller="Product" asp-action="Index" class="btn btn-tool text-white"><i class="bi bi-plus-circle"></i> Nhập kho</a>
+            <a asp-area="Staff" asp-controller="Product" asp-action="Index" class="btn btn-tool text-white"><i class="bi bi-plus-circle"></i> Nhập kho</a>
         </div>
     </div>
     <div class="card-body table-responsive p-0">

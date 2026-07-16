@@ -15,6 +15,16 @@ namespace OSBIS.Models.Entities
         public decimal UnitPrice { get; set; }
         public int TotalStock { get; set; }
         public int ReservedQuantity { get; set; }
+
+        public int GetAvailableStock()
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var expiredQty = InventoryBatches?
+                .Where(b => b.ExpiryDate <= today)
+                .Sum(b => b.Quantity) ?? 0;
+            return Math.Max(0, TotalStock - ReservedQuantity - expiredQty);
+        }
+
         public bool? IsDeleted { get; set; }
         public byte[]? RowVersion { get; set; }
         public DateTime? CreatedAt { get; set; }

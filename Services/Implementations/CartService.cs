@@ -102,7 +102,7 @@ namespace OSBIS.Services.Implementations
                 if (product == null) continue;
 
                 var primaryImage = product.ProductImages?.FirstOrDefault(i => i.IsPrimary == true)?.ImageUrl;
-                var available = product.TotalStock - product.ReservedQuantity;
+                var available = product.GetAvailableStock();
                 if (available < 0) available = 0;
 
                 summary.Items.Add(new CartItemViewModel
@@ -142,7 +142,7 @@ namespace OSBIS.Services.Implementations
             if (product == null || product.IsDeleted == true)
                 return new CartResult { Success = false, Message = "Sản phẩm không tồn tại." };
 
-            var available = product.TotalStock - product.ReservedQuantity;
+            var available = product.GetAvailableStock();
             if (available < quantity)
                 return new CartResult { Success = false, Message = $"Chỉ còn {available} sản phẩm trong kho." };
 
@@ -200,7 +200,7 @@ namespace OSBIS.Services.Implementations
                 return new CartResult { Success = false, Message = "Sản phẩm không tồn tại." };
 
             var delta = newQuantity - item.Quantity;
-            var newAvailableForReserve = product.TotalStock - product.ReservedQuantity;
+            var newAvailableForReserve = product.GetAvailableStock();
 
             if (delta > 0 && newAvailableForReserve < delta)
                 return new CartResult { Success = false, Message = $"Chỉ thêm được {newAvailableForReserve} sản phẩm." };

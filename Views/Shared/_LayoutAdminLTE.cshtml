@@ -60,42 +60,22 @@
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
+
+            <li class="nav-header">Báo cáo & Thống kê</li>
             <li>
-                <a class="nav-link @IsActive("Report", "Dashboard", "Revenue", "Inventory")"
-                   href="/Admin/Report/Dashboard">
-                    <i class="bi bi-graph-up-arrow"></i> Báo cáo
+                <a class="nav-link @IsActive("Report", "Dashboard", "Revenue")"
+                   href="/Admin/Report/Revenue">
+                    <i class="bi bi-graph-up-arrow"></i> Báo cáo doanh thu
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("Report", "Inventory")"
+                   href="/Admin/Report/Inventory">
+                    <i class="bi bi-boxes"></i> Báo cáo tồn kho
                 </a>
             </li>
 
-            <li class="nav-header">Vận hành (Staff area)</li>
-            <li>
-                <a class="nav-link" href="/Staff/Order">
-                    <i class="bi bi-cart-check"></i> Đơn hàng
-                </a>
-            </li>
-            <li>
-                <a class="nav-link" href="/Staff/Product">
-                    <i class="bi bi-box-seam"></i> Sản phẩm
-                </a>
-            </li>
-            <li>
-                <a class="nav-link" href="/Staff/Voucher">
-                    <i class="bi bi-ticket-perforated"></i> Voucher
-                </a>
-            </li>
-            <li>
-                <a class="nav-link" href="/Staff/Shipment">
-                    <i class="bi bi-truck"></i> Vận chuyển
-                </a>
-            </li>
-
-            <li class="nav-header">Danh mục</li>
-            <li>
-                <a class="nav-link @IsActive("Category")"
-                   href="/Admin/Category">
-                    <i class="bi bi-tags"></i> Danh mục SP
-                </a>
-            </li>
+            <li class="nav-header">Quản trị hệ thống</li>
 
             <li class="nav-header">Thông báo</li>
             <li>
@@ -109,32 +89,31 @@
                 </a>
             </li>
 
-            @if (isAdmin)
-            {
-                <li class="nav-header">Quản trị (Admin only)</li>
-                <li>
-                    <a class="nav-link @IsActive("User")"
-                       href="/Admin/User">
-                        <i class="bi bi-people"></i> Người dùng
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-link @IsActive("SystemConfig")"
-                       href="/Admin/SystemConfig">
-                        <i class="bi bi-sliders"></i> Cấu hình hệ thống
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-link" href="/Admin/Notification/SendToUser">
-                        <i class="bi bi-send"></i> Gửi notification
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-link" href="/Admin/Notification/Broadcast">
-                        <i class="bi bi-megaphone"></i> Broadcast
-                    </a>
-                </li>
-            }
+            <li class="nav-header">Quản trị (Admin only)</li>
+            <li>
+                <a class="nav-link @IsActive("Category")"
+                   href="/Admin/Category">
+                    <i class="bi bi-tags"></i> Danh mục SP
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("Voucher")"
+                   href="/Admin/Voucher">
+                    <i class="bi bi-ticket-perforated"></i> Voucher
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("User")"
+                   href="/Admin/User">
+                    <i class="bi bi-people"></i> Người dùng
+                </a>
+            </li>
+            <li>
+                <a class="nav-link @IsActive("SystemConfig")"
+                   href="/Admin/SystemConfig">
+                    <i class="bi bi-sliders"></i> Cấu hình hệ thống
+                </a>
+            </li>
 
             <li class="nav-header">Khác</li>
             <li>

@@ -16,5 +16,6 @@ namespace OSBIS.Services.Interfaces
         Task NotifyOrderShippedAsync(Order order);
         Task NotifyOrderDeliveredAsync(Order order);
         Task NotifyVoucherAvailableAsync(int userId, Voucher voucher);
+        Task GenerateExpiringBatchNotificationsAsync(int? userId = null);
     }
 }

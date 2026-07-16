@@ -7,7 +7,7 @@ namespace OSBIS.Controllers.Admin
     /// <summary>
     /// Admin xem báo cáo thống kê (Phase 5).
     /// </summary>
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize]
     [Area("Admin")]
     public class ReportController : Controller
     {
@@ -15,6 +15,7 @@ namespace OSBIS.Controllers.Admin
         public ReportController(IReportService reportService) { _reportService = reportService; }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Dashboard()
         {
             var data = await _reportService.GetDashboardDataAsync();
@@ -22,6 +23,7 @@ namespace OSBIS.Controllers.Admin
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Revenue(DateTime? fromDate, DateTime? toDate)
         {
             var from = fromDate ?? DateTime.UtcNow.AddDays(-29);
@@ -33,6 +35,7 @@ namespace OSBIS.Controllers.Admin
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Inventory()
         {
             var data = await _reportService.GetInventoryStatusAsync();

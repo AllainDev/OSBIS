@@ -10,14 +10,22 @@ namespace OSBIS.Controllers.Staff
     public class DashboardController : Controller
     {
         private readonly IReportService _reportService;
+        private readonly INotificationService _notificationService;
 
-        public DashboardController(IReportService reportService)
+        public DashboardController(IReportService reportService, INotificationService notificationService)
         {
             _reportService = reportService;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
         {
+            var userId = User.GetUserId();
+            if (userId.HasValue)
+            {
+                await _notificationService.GenerateExpiringBatchNotificationsAsync(userId.Value);
+            }
+
             var data = await _reportService.GetDashboardDataAsync();
 
             // Order status pie
