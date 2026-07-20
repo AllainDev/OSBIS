@@ -31,6 +31,7 @@ namespace OSBIS.Services.Implementations
                 if (product == null)
                     throw new InvalidOperationException("Sản phẩm không tồn tại.");
 
+
                 product.TotalStock += batch.Quantity;
                 product.UpdatedAt = DateTime.UtcNow;
                 _uow.Products.Update(product);
